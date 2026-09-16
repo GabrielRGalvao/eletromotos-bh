@@ -1,0 +1,13 @@
+# Arquivos gerados
+**/target/
+**/node_modules/
+**/dist/
+
+# Configuração local
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+*.iml
