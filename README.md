@@ -20,6 +20,15 @@ cd backend
 ./mvnw spring-boot:run
 ```
 
+Antes de iniciar o backend, configure o `.env` e inicie o PostgreSQL
+conforme a seção “Banco de dados local”.
+
+Execute o Maven Wrapper dentro da pasta `backend`, pois a aplicação
+carrega o arquivo `.env` pelo caminho relativo `../.env`.
+
+O Flyway gerencia as migrations, e o Hibernate valida a estrutura
+das tabelas.
+
 O servidor inicia em http://localhost:8080.
 
 ## Banco de dados local
