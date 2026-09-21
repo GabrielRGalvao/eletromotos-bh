@@ -39,8 +39,45 @@ public class Cliente {
     protected Cliente() {
     }
 
+    public Cliente(String nome, String telefone, String email,
+                   String cpf, String observacoes) {
+        this.nome = nome;
+        this.telefone = telefone;
+        this.email = email;
+        this.cpf = cpf;
+        this.observacoes = observacoes;
+    }
+
     @PrePersist
     private void definirDataCadastro() {
         dataCadastro = Instant.now();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public String getObservacoes() {
+        return observacoes;
+    }
+
+    public Instant getDataCadastro() {
+        return dataCadastro;
     }
 }
