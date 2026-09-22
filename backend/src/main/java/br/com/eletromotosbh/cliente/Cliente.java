@@ -80,4 +80,13 @@ public class Cliente {
     public Instant getDataCadastro() {
         return dataCadastro;
     }
+
+    public void atualizarDados(String nome, String telefone, String email,
+                               String cpf, String observacoes) {
+        this.nome = nome;
+        this.telefone = telefone;
+        this.email = email;
+        this.cpf = cpf;
+        this.observacoes = observacoes;
+    }
 }

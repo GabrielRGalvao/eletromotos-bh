@@ -53,6 +53,25 @@ public class ClienteService {
         return converterParaResponse(cliente);
     }
 
+    @Transactional
+    public ClienteResponse atualizar(Long id, ClienteRequest request) {
+        Cliente cliente = clienteRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Cliente não encontrado"
+            ));
+
+        cliente.atualizarDados(
+            request.nome(),
+            request.telefone(),
+            request.email(),
+            request.cpf(),
+            request.observacoes()
+        );
+
+        return converterParaResponse(cliente);
+    }
+
     private ClienteResponse converterParaResponse(Cliente cliente) {
         return new ClienteResponse(
             cliente.getId(),
