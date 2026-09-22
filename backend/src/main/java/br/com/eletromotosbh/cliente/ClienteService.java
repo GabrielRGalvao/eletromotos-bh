@@ -1,7 +1,12 @@
 package br.com.eletromotosbh.cliente;
 
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import br.com.eletromotosbh.cliente.dto.ClienteRequest;
 import br.com.eletromotosbh.cliente.dto.ClienteResponse;
@@ -26,15 +31,37 @@ public class ClienteService {
         );
 
         Cliente clienteSalvo = clienteRepository.save(cliente);
+        return converterParaResponse(clienteSalvo);
+    }
 
+    @Transactional(readOnly = true)
+    public List<ClienteResponse> listar() {
+        return clienteRepository.findAll(Sort.by("id"))
+            .stream()
+            .map(this::converterParaResponse)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ClienteResponse buscarPorId(Long id) {
+        Cliente cliente = clienteRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Cliente não encontrado"
+            ));
+
+        return converterParaResponse(cliente);
+    }
+
+    private ClienteResponse converterParaResponse(Cliente cliente) {
         return new ClienteResponse(
-            clienteSalvo.getId(),
-            clienteSalvo.getNome(),
-            clienteSalvo.getTelefone(),
-            clienteSalvo.getEmail(),
-            clienteSalvo.getCpf(),
-            clienteSalvo.getObservacoes(),
-            clienteSalvo.getDataCadastro()
+            cliente.getId(),
+            cliente.getNome(),
+            cliente.getTelefone(),
+            cliente.getEmail(),
+            cliente.getCpf(),
+            cliente.getObservacoes(),
+            cliente.getDataCadastro()
         );
     }
 }
