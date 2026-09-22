@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 
 import br.com.eletromotosbh.cliente.dto.ClienteRequest;
@@ -48,6 +49,12 @@ public class ClienteController {
             @PathVariable("id") Long id,
             @Valid @RequestBody ClienteRequest request) {
         return clienteService.atualizar(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void excluir(@PathVariable("id") Long id) {
+        clienteService.excluir(id);
     }
 
 }

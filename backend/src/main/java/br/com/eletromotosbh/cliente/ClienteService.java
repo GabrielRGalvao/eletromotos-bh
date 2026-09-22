@@ -72,6 +72,17 @@ public class ClienteService {
         return converterParaResponse(cliente);
     }
 
+    @Transactional
+    public void excluir(Long id) {
+        Cliente cliente = clienteRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Cliente não encontrado"
+            ));
+
+        clienteRepository.delete(cliente);
+    }
+
     private ClienteResponse converterParaResponse(Cliente cliente) {
         return new ClienteResponse(
             cliente.getId(),
