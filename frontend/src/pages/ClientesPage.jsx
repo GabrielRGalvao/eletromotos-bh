@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { listarClientes } from '../services/clienteService'
+import ClienteForm from '../components/ClienteForm'
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState([])
@@ -32,6 +33,10 @@ export default function ClientesPage() {
     return () => controller.abort()
   }, [])
 
+    function adicionarCliente(clienteSalvo) {
+    setClientes((atuais) => [...atuais, clienteSalvo])
+  }
+
   return (
     <main className="pagina">
       <header className="cabecalho-pagina">
@@ -55,8 +60,10 @@ export default function ClientesPage() {
         </div>
       )}
 
-      {!carregando && !erro && (
+            {!carregando && !erro && (
         <>
+          <ClienteForm onCadastrado={adicionarCliente} />
+
           <p className="resumo">
             {clientes.length} cliente(s) cadastrado(s)
           </p>
