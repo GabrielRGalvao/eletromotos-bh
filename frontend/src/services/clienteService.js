@@ -30,3 +30,26 @@ export async function cadastrarCliente(cliente) {
 
   return resposta.json()
 }
+
+export async function atualizarCliente(id, cliente) {
+  const resposta = await fetch(`/api/clientes/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(cliente),
+  })
+
+  if (!resposta.ok) {
+    const dados = await resposta.json().catch(() => ({}))
+
+    const erro = new Error(
+      dados.mensagem || 'Não foi possível atualizar o cliente.'
+    )
+
+    erro.campos = dados.campos || {}
+    throw erro
+  }
+
+  return resposta.json()
+}

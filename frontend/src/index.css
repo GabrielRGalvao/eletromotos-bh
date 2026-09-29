@@ -209,3 +209,28 @@ fieldset:disabled button {
   cursor: wait;
   opacity: 0.65;
 }
+
+.acoes-formulario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.botao-secundario {
+  border: 1px solid #087665;
+  background: #fff;
+  color: #087665;
+}
+
+.botao-secundario:hover {
+  background: #eaf5f2;
+}
+
+.cartao-cliente > button {
+  margin-top: 20px;
+}
+
+.observacoes-cliente {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import { cadastrarCliente } from '../services/clienteService'
+import {
+  cadastrarCliente,
+  atualizarCliente,
+} from '../services/clienteService'
 
 const campos = [
   {
@@ -32,13 +35,18 @@ const campos = [
   },
 ]
 
-export default function ClienteForm({ onCadastrado }) {
-  const [salvando, setSalvando] = useState(false)
+export default function ClienteForm({
+  cliente,
+  onSalvo,
+  onCancelar,
+  salvando,
+  onSalvandoChange,
+}) {
   const [erro, setErro] = useState('')
   const [errosCampos, setErrosCampos] = useState({})
-  const [sucesso, setSucesso] = useState('')
+  const editando = Boolean(cliente)
 
-  async function enviar(evento) {
+    async function enviar(evento) {
     evento.preventDefault()
 
     if (salvando) return
@@ -46,7 +54,7 @@ export default function ClienteForm({ onCadastrado }) {
     const formulario = evento.currentTarget
     const dados = new FormData(formulario)
 
-    const cliente = {
+    const dadosCliente = {
       nome: dados.get('nome').trim(),
       telefone: dados.get('telefone').trim(),
       email: dados.get('email').trim() || null,
@@ -54,16 +62,20 @@ export default function ClienteForm({ onCadastrado }) {
       observacoes: dados.get('observacoes').trim() || null,
     }
 
-    setSalvando(true)
+    onSalvandoChange(true)
     setErro('')
     setErrosCampos({})
-    setSucesso('')
 
     try {
-      const clienteSalvo = await cadastrarCliente(cliente)
-      onCadastrado(clienteSalvo)
-      formulario.reset()
-      setSucesso('Cliente cadastrado com sucesso.')
+      const clienteSalvo = editando
+        ? await atualizarCliente(cliente.id, dadosCliente)
+        : await cadastrarCliente(dadosCliente)
+
+      if (!editando) {
+        formulario.reset()
+      }
+
+      onSalvo(clienteSalvo)
     } catch (error) {
       setErro(
         error instanceof TypeError
@@ -72,13 +84,14 @@ export default function ClienteForm({ onCadastrado }) {
       )
       setErrosCampos(error.campos || {})
     } finally {
-      setSalvando(false)
+      onSalvandoChange(false)
     }
   }
 
   return (
     <section className="painel-formulario" aria-labelledby="titulo-cadastro">
-      <h2 id="titulo-cadastro">Novo cliente</h2>
+      <h2 id="titulo-cadastro">
+        {editando ? 'Editar cliente' : 'Novo cliente'}</h2>
       <p>Nome e telefone são obrigatórios.</p>
 
       <form onSubmit={enviar} noValidate>
@@ -99,6 +112,7 @@ export default function ClienteForm({ onCadastrado }) {
                   type={campo.tipo}
                   maxLength={campo.limite}
                   required={campo.obrigatorio}
+                  defaultValue={cliente?.[campo.nome] ?? ''}
                   aria-invalid={Boolean(errosCampos[campo.nome])}
                   aria-describedby={
                     errosCampos[campo.nome]
@@ -127,16 +141,32 @@ export default function ClienteForm({ onCadastrado }) {
               id="cliente-observacoes"
               name="observacoes"
               rows={3}
+              defaultValue={cliente?.observacoes ?? ''}
             />
           </div>
 
-          <button type="submit">
-            {salvando ? 'Salvando...' : 'Salvar cliente'}
-          </button>
+          <div className="acoes-formulario">
+            <button type="submit">
+              {salvando
+                ? 'Salvando...'
+                : editando
+                  ? 'Salvar alterações'
+                  : 'Salvar cliente'}
+            </button>
+
+            {editando && (
+              <button
+                type="button"
+                className="botao-secundario"
+                onClick={onCancelar}
+              >
+                Cancelar edição
+              </button>
+            )}
+          </div>
         </fieldset>
 
         {erro && <p className="erro-campo" role="alert">{erro}</p>}
-        {sucesso && <p className="mensagem-sucesso" role="status">{sucesso}</p>}
       </form>
     </section>
   )
