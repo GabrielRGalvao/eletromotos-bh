@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { listarClientes } from "../services/clienteService";
 import ClienteForm from "../components/ClienteForm";
+import { listarClientes, excluirCliente } from "../services/clienteService";
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState([]);
@@ -9,6 +9,10 @@ export default function ClientesPage() {
   const [clienteEmEdicao, setClienteEmEdicao] = useState(null);
   const [salvando, setSalvando] = useState(false);
   const [sucesso, setSucesso] = useState("");
+  const [excluindoId, setExcluindoId] = useState(null);
+  const [erroExclusao, setErroExclusao] = useState("");
+
+  const ocupado = salvando || excluindoId !== null;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -72,6 +76,40 @@ export default function ClientesPage() {
     setSucesso("");
   }
 
+  async function confirmarExclusao(cliente) {
+    if (ocupado) return;
+
+    const confirmou = window.confirm(
+      `Excluir o cliente "${cliente.nome}"? Esta ação não pode ser desfeita.`,
+    );
+
+    if (!confirmou) return;
+
+    setExcluindoId(cliente.id);
+    setErroExclusao("");
+    setSucesso("");
+
+    try {
+      await excluirCliente(cliente.id);
+
+      setClientes((atuais) => atuais.filter((item) => item.id !== cliente.id));
+
+      if (clienteEmEdicao?.id === cliente.id) {
+        setClienteEmEdicao(null);
+      }
+
+      setSucesso("Cliente excluído com sucesso.");
+    } catch (error) {
+      setErroExclusao(
+        error instanceof TypeError
+          ? "Não foi possível conectar. Tente novamente."
+          : error.message,
+      );
+    } finally {
+      setExcluindoId(null);
+    }
+  }
+
   return (
     <main className="pagina">
       <header className="cabecalho-pagina">
@@ -102,13 +140,19 @@ export default function ClientesPage() {
             cliente={clienteEmEdicao}
             onSalvo={salvarClienteNaLista}
             onCancelar={cancelarEdicao}
-            salvando={salvando}
+            salvando={ocupado}
             onSalvandoChange={setSalvando}
           />
 
           {sucesso && (
             <p className="mensagem-sucesso" role="status">
               {sucesso}
+            </p>
+          )}
+
+          {erroExclusao && (
+            <p className="erro-campo" role="alert">
+              {erroExclusao}
             </p>
           )}
 
@@ -137,15 +181,27 @@ export default function ClientesPage() {
                       </>
                     )}
                   </dl>
-                  <button
-                    type="button"
-                    className="botao-secundario"
-                    disabled={salvando}
-                    onClick={() => iniciarEdicao(cliente)}
-                    aria-label={`Editar ${cliente.nome}`}
-                  >
-                    Editar
-                  </button>
+                  <div className="acoes-formulario acoes-cliente">
+                    <button
+                      type="button"
+                      className="botao-secundario"
+                      disabled={ocupado}
+                      onClick={() => iniciarEdicao(cliente)}
+                      aria-label={`Editar ${cliente.nome}`}
+                    >
+                      Editar
+                    </button>
+
+                    <button
+                      type="button"
+                      className="botao-perigo"
+                      disabled={ocupado}
+                      onClick={() => confirmarExclusao(cliente)}
+                      aria-label={`Excluir ${cliente.nome}`}
+                    >
+                      {excluindoId === cliente.id ? "Excluindo..." : "Excluir"}
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

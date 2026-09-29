@@ -53,3 +53,17 @@ export async function atualizarCliente(id, cliente) {
 
   return resposta.json()
 }
+
+export async function excluirCliente(id) {
+  const resposta = await fetch(`/api/clientes/${id}`, {
+    method: 'DELETE',
+  })
+
+  if (!resposta.ok) {
+    const dados = await resposta.json().catch(() => ({}))
+
+    throw new Error(
+      dados.mensagem || 'Não foi possível excluir o cliente.'
+    )
+  }
+}

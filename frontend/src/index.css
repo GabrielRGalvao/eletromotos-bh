@@ -226,8 +226,18 @@ fieldset:disabled button {
   background: #eaf5f2;
 }
 
-.cartao-cliente > button {
+.acoes-cliente {
   margin-top: 20px;
+}
+
+.botao-perigo {
+  border: 1px solid #b42318;
+  background: #fff;
+  color: #b42318;
+}
+
+.botao-perigo:hover:not(:disabled) {
+  background: #fff1f0;
 }
 
 .observacoes-cliente {
