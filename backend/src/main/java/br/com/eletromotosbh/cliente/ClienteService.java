@@ -10,25 +10,29 @@ import org.springframework.web.server.ResponseStatusException;
 
 import br.com.eletromotosbh.cliente.dto.ClienteRequest;
 import br.com.eletromotosbh.cliente.dto.ClienteResponse;
+import br.com.eletromotosbh.veiculo.VeiculoRepository;
 
 @Service
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
+    private final VeiculoRepository veiculoRepository;
 
-    public ClienteService(ClienteRepository clienteRepository) {
+    public ClienteService(
+            ClienteRepository clienteRepository,
+            VeiculoRepository veiculoRepository) {
         this.clienteRepository = clienteRepository;
+        this.veiculoRepository = veiculoRepository;
     }
 
     @Transactional
     public ClienteResponse cadastrar(ClienteRequest request) {
         Cliente cliente = new Cliente(
-            request.nome(),
-            request.telefone(),
-            request.email(),
-            request.cpf(),
-            request.observacoes()
-        );
+                request.nome(),
+                request.telefone(),
+                request.email(),
+                request.cpf(),
+                request.observacoes());
 
         Cliente clienteSalvo = clienteRepository.save(cliente);
         return converterParaResponse(clienteSalvo);
@@ -37,18 +41,17 @@ public class ClienteService {
     @Transactional(readOnly = true)
     public List<ClienteResponse> listar() {
         return clienteRepository.findAll(Sort.by("id"))
-            .stream()
-            .map(this::converterParaResponse)
-            .toList();
+                .stream()
+                .map(this::converterParaResponse)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public ClienteResponse buscarPorId(Long id) {
         Cliente cliente = clienteRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Cliente não encontrado"
-            ));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Cliente não encontrado"));
 
         return converterParaResponse(cliente);
     }
@@ -56,18 +59,16 @@ public class ClienteService {
     @Transactional
     public ClienteResponse atualizar(Long id, ClienteRequest request) {
         Cliente cliente = clienteRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Cliente não encontrado"
-            ));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Cliente não encontrado"));
 
         cliente.atualizarDados(
-            request.nome(),
-            request.telefone(),
-            request.email(),
-            request.cpf(),
-            request.observacoes()
-        );
+                request.nome(),
+                request.telefone(),
+                request.email(),
+                request.cpf(),
+                request.observacoes());
 
         return converterParaResponse(cliente);
     }
@@ -75,23 +76,27 @@ public class ClienteService {
     @Transactional
     public void excluir(Long id) {
         Cliente cliente = clienteRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Cliente não encontrado"
-            ));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Cliente não encontrado"));
+
+        if (veiculoRepository.existsByClienteId(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Não é possível excluir um cliente com veículos cadastrados");
+        }
 
         clienteRepository.delete(cliente);
     }
 
     private ClienteResponse converterParaResponse(Cliente cliente) {
         return new ClienteResponse(
-            cliente.getId(),
-            cliente.getNome(),
-            cliente.getTelefone(),
-            cliente.getEmail(),
-            cliente.getCpf(),
-            cliente.getObservacoes(),
-            cliente.getDataCadastro()
-        );
+                cliente.getId(),
+                cliente.getNome(),
+                cliente.getTelefone(),
+                cliente.getEmail(),
+                cliente.getCpf(),
+                cliente.getObservacoes(),
+                cliente.getDataCadastro());
     }
 }
