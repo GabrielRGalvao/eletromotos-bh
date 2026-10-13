@@ -252,3 +252,42 @@ fieldset:disabled button {
   margin-top: 24px;
   overflow-wrap: anywhere;
 }
+
+.navegacao-principal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.navegacao-principal button {
+  border: 1px solid transparent;
+  background: transparent;
+  color: #fff;
+}
+
+.navegacao-principal button:hover {
+  background: #ffffff14;
+}
+
+.navegacao-principal button[aria-current="page"] {
+  border-color: #fff;
+  background: #ffffff14;
+}
+
+.situacao-mecanico {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.situacao-ativa {
+  background: #eaf5f2;
+  color: #065c4f;
+}
+
+.situacao-inativa {
+  background: #eef1f4;
+  color: #526575;
+}
