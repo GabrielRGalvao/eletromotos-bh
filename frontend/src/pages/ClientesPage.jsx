@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ClienteForm from "../components/ClienteForm";
 import { listarClientes, excluirCliente } from "../services/clienteService";
+import VeiculosClientePage from "./VeiculosClientePage";
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState([]);
@@ -11,6 +12,7 @@ export default function ClientesPage() {
   const [sucesso, setSucesso] = useState("");
   const [excluindoId, setExcluindoId] = useState(null);
   const [erroExclusao, setErroExclusao] = useState("");
+  const [clienteDosVeiculos, setClienteDosVeiculos] = useState(null);
 
   const ocupado = salvando || excluindoId !== null;
 
@@ -110,6 +112,16 @@ export default function ClientesPage() {
     }
   }
 
+  if (clienteDosVeiculos) {
+    return (
+      <VeiculosClientePage
+        key={clienteDosVeiculos.id}
+        cliente={clienteDosVeiculos}
+        onVoltar={() => setClienteDosVeiculos(null)}
+      />
+    );
+  }
+
   return (
     <main className="pagina">
       <header className="cabecalho-pagina">
@@ -182,6 +194,16 @@ export default function ClientesPage() {
                     )}
                   </dl>
                   <div className="acoes-formulario acoes-cliente">
+                    <button
+                      type="button"
+                      className="botao-secundario"
+                      disabled={ocupado || clienteEmEdicao !== null}
+                      onClick={() => setClienteDosVeiculos(cliente)}
+                      aria-label={`Ver veículos de ${cliente.nome}`}
+                    >
+                      Veículos
+                    </button>
+                    
                     <button
                       type="button"
                       className="botao-secundario"

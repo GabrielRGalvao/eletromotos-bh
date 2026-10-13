@@ -170,7 +170,8 @@ button:focus-visible {
 }
 
 .campo input,
-.campo textarea {
+.campo textarea,
+.campo select {
   width: 100%;
   min-height: 44px;
   padding: 10px 12px;
@@ -186,12 +187,14 @@ button:focus-visible {
 }
 
 .campo input:focus-visible,
-.campo textarea:focus-visible {
+.campo textarea:focus-visible,
+.campo select:focus-visible {
   outline: 3px solid #1976d2;
   outline-offset: 2px;
 }
 
-.campo input[aria-invalid="true"] {
+.campo input[aria-invalid="true"],
+.campo select[aria-invalid="true"] {
   border-color: #922c2c;
 }
 
@@ -242,5 +245,10 @@ fieldset:disabled button {
 
 .observacoes-cliente {
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cabecalho-veiculos {
+  margin-top: 24px;
   overflow-wrap: anywhere;
 }
