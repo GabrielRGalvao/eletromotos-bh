@@ -42,3 +42,11 @@ export async function alterarStatusMecanico(id, ativo) {
 
   return lerResposta(resposta)
 }
+
+export async function listarMecanicosAtivos(signal) {
+  const resposta = await fetch('/api/mecanicos?somenteAtivos=true', {
+    signal,
+  })
+
+  return lerResposta(resposta)
+}

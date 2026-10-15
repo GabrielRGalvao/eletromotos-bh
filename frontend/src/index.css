@@ -194,6 +194,7 @@ button:focus-visible {
 }
 
 .campo input[aria-invalid="true"],
+.campo textarea[aria-invalid="true"],
 .campo select[aria-invalid="true"] {
   border-color: #922c2c;
 }
@@ -290,4 +291,13 @@ fieldset:disabled button {
 .situacao-inativa {
   background: #eef1f4;
   color: #526575;
+}
+
+.painel-formulario > .mensagem-sucesso {
+  color: #087665;
+  font-weight: 600;
+}
+
+.painel-formulario > .erro-campo {
+  color: #922c2c;
 }
