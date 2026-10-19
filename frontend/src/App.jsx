@@ -1,61 +1,62 @@
-import { useState } from 'react'
-import ClientesPage from './pages/ClientesPage'
-import MecanicosPage from './pages/MecanicosPage'
-import AgendamentosPage from './pages/AgendamentosPage'
+import { useState } from "react";
+import ClientesPage from "./pages/ClientesPage";
+import MecanicosPage from "./pages/MecanicosPage";
+import AgendamentosPage from "./pages/AgendamentosPage";
+import OrdensServicoPage from "./pages/OrdensServicoPage";
 
 export default function App() {
-  const [pagina, setPagina] = useState('clientes')
+  const [pagina, setPagina] = useState("clientes");
 
   return (
     <>
       <header className="barra-superior">
         <span className="marca">EletroMotos BH</span>
 
-        <nav
-          className="navegacao-principal"
-          aria-label="Navegação principal"
-        >
+        <nav className="navegacao-principal" aria-label="Navegação principal">
           <button
             type="button"
-            aria-current={
-              pagina === 'clientes' ? 'page' : undefined
-            }
-            onClick={() => setPagina('clientes')}
+            aria-current={pagina === "clientes" ? "page" : undefined}
+            onClick={() => setPagina("clientes")}
           >
             Clientes
           </button>
 
           <button
             type="button"
-            aria-current={
-              pagina === 'mecanicos' ? 'page' : undefined
-            }
-            onClick={() => setPagina('mecanicos')}
+            aria-current={pagina === "mecanicos" ? "page" : undefined}
+            onClick={() => setPagina("mecanicos")}
           >
             Mecânicos
           </button>
 
           <button
             type="button"
-            aria-current={
-              pagina === 'agendamentos' ? 'page' : undefined
-            }
-            onClick={() => setPagina('agendamentos')}
+            aria-current={pagina === "agendamentos" ? "page" : undefined}
+            onClick={() => setPagina("agendamentos")}
           >
             Agendamentos
+          </button>
+
+          <button
+            type="button"
+            aria-current={pagina === "ordens-servico" ? "page" : undefined}
+            onClick={() => setPagina("ordens-servico")}
+          >
+            Ordens de serviço
           </button>
         </nav>
       </header>
 
-      <div hidden={pagina !== 'clientes'}>
+      <div hidden={pagina !== "clientes"}>
         <ClientesPage />
       </div>
 
-      <div hidden={pagina !== 'mecanicos'}>
-        {pagina === 'mecanicos' && <MecanicosPage />}
+      <div hidden={pagina !== "mecanicos"}>
+        {pagina === "mecanicos" && <MecanicosPage />}
       </div>
 
-      {pagina === 'agendamentos' && <AgendamentosPage />}
+      {pagina === "agendamentos" && <AgendamentosPage />}
+      {pagina === "ordens-servico" && <OrdensServicoPage />}
     </>
-  )
+  );
 }

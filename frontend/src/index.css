@@ -301,3 +301,69 @@ fieldset:disabled button {
 .painel-formulario > .erro-campo {
   color: #922c2c;
 }
+
+.grupo-opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin: 0 0 20px;
+  padding: 12px;
+  border: 1px solid #dce4ea;
+  border-radius: 8px;
+}
+
+.grupo-opcoes legend {
+  padding: 0 4px;
+  font-weight: 700;
+}
+
+.grupo-opcoes label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.grupo-opcoes input {
+  width: auto;
+  min-height: auto;
+}
+
+.ajuda-campo {
+  color: #526575;
+  font-size: 13px;
+}
+
+.cabecalho-lista {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.cabecalho-lista h2 {
+  margin: 0;
+}
+
+.situacao-os {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.situacao-em-diagnostico {
+  background: #fff4d6;
+  color: #735c00;
+}
+
+.link-botao {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+}
