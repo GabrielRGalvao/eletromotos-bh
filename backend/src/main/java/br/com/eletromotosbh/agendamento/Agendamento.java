@@ -48,8 +48,7 @@ public class Agendamento {
             Mecanico mecanico,
             LocalDate dataAgendamento,
             LocalTime horaAgendamento,
-            String relatoCliente
-    ) {
+            String relatoCliente) {
         this.veiculo = veiculo;
         this.mecanico = mecanico;
         this.dataAgendamento = dataAgendamento;
@@ -62,6 +61,10 @@ public class Agendamento {
         if (dataCadastro == null) {
             dataCadastro = Instant.now();
         }
+    }
+
+    public void marcarComoRecebido() {
+        this.status = StatusAgendamento.RECEBIDO;
     }
 
     public Long getId() {

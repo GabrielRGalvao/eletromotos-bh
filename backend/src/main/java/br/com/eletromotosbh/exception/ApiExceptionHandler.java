@@ -8,6 +8,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -20,16 +22,14 @@ public class ApiExceptionHandler {
 
         for (var erro : exception.getBindingResult().getFieldErrors()) {
             campos.putIfAbsent(
-                erro.getField(),
-                erro.getDefaultMessage()
-            );
+                    erro.getField(),
+                    erro.getDefaultMessage());
         }
 
         ApiError resposta = new ApiError(
-            400,
-            "Confira os campos informados",
-            campos
-        );
+                400,
+                "Confira os campos informados",
+                campos);
 
         return ResponseEntity.badRequest().body(resposta);
     }
@@ -45,14 +45,36 @@ public class ApiExceptionHandler {
         }
 
         ApiError resposta = new ApiError(
-            exception.getStatusCode().value(),
-            mensagem,
-            Map.of()
-        );
+                exception.getStatusCode().value(),
+                mensagem,
+                Map.of());
 
         return ResponseEntity
-            .status(exception.getStatusCode())
-            .headers(exception.getHeaders())
-            .body(resposta);
+                .status(exception.getStatusCode())
+                .headers(exception.getHeaders())
+                .body(resposta);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiError> tratarArquivoMuitoGrande(
+            MaxUploadSizeExceededException exception) {
+        ApiError resposta = new ApiError(
+                413,
+                "O vídeo deve ter no máximo 100 MB",
+                Map.of());
+
+        return ResponseEntity.status(413).body(resposta);
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ApiError> tratarParteAusente(
+            MissingServletRequestPartException exception) {
+        ApiError resposta = new ApiError(
+                400,
+                "Envie a parte obrigatória: "
+                        + exception.getRequestPartName(),
+                Map.of());
+
+        return ResponseEntity.badRequest().body(resposta);
     }
 }

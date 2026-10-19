@@ -11,3 +11,6 @@
 # IDE
 .idea/
 *.iml
+
+# Arquivos enviados pelos usuários
+/backend/uploads/
