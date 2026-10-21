@@ -2,6 +2,7 @@ package br.com.eletromotosbh.ordemservico.dto;
 
 import br.com.eletromotosbh.ordemservico.StatusOrdemServico;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 public record OrdemServicoResponse(
@@ -19,6 +20,12 @@ public record OrdemServicoResponse(
     boolean carregadorRecebido,
     String acessoriosRecebidos,
     String observacoesRecebimento,
+    String diagnostico,
+    String descricaoOrcamento,
+    BigDecimal valorOrcamento,
+    Instant orcamentoEnviadoEm,
+    Instant decisaoOrcamentoEm,
+    String observacaoDecisao,
     StatusOrdemServico status,
     Instant recebidoEm,
     String videoUrl,

@@ -3,6 +3,8 @@ package br.com.eletromotosbh.ordemservico;
 import br.com.eletromotosbh.agendamento.Agendamento;
 import br.com.eletromotosbh.agendamento.AgendamentoRepository;
 import br.com.eletromotosbh.agendamento.StatusAgendamento;
+import br.com.eletromotosbh.ordemservico.dto.DecisaoOrcamentoRequest;
+import br.com.eletromotosbh.ordemservico.dto.DiagnosticoOrcamentoRequest;
 import br.com.eletromotosbh.ordemservico.dto.OrdemServicoResponse;
 import br.com.eletromotosbh.ordemservico.dto.RecebimentoRequest;
 import org.springframework.core.io.Resource;
@@ -98,6 +100,58 @@ public class OrdemServicoService {
         return converterParaResponse(salva);
     }
 
+    @Transactional
+    public OrdemServicoResponse registrarDiagnostico(
+            Long id,
+            DiagnosticoOrcamentoRequest request
+    ) {
+        OrdemServico ordem = buscarParaAtualizacao(id);
+
+        if (ordem.getStatus() != StatusOrdemServico.EM_DIAGNOSTICO) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Somente ordens em diagnóstico podem receber orçamento"
+            );
+        }
+
+        ordem.registrarDiagnostico(
+            request.diagnostico().trim(),
+            request.descricaoOrcamento().trim(),
+            request.valorOrcamento()
+        );
+
+        OrdemServico salva = ordemServicoRepository.saveAndFlush(ordem);
+
+        return converterParaResponse(salva);
+    }
+
+    @Transactional
+    public OrdemServicoResponse registrarDecisaoOrcamento(
+            Long id,
+            DecisaoOrcamentoRequest request
+    ) {
+        OrdemServico ordem = buscarParaAtualizacao(id);
+
+        if (
+            ordem.getStatus()
+                != StatusOrdemServico.AGUARDANDO_APROVACAO
+        ) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Somente ordens aguardando aprovação podem receber uma decisão"
+            );
+        }
+
+        ordem.registrarDecisao(
+            request.aprovado(),
+            normalizarOpcional(request.observacao())
+        );
+
+        OrdemServico salva = ordemServicoRepository.saveAndFlush(ordem);
+
+        return converterParaResponse(salva);
+    }
+
     @Transactional(readOnly = true)
     public List<OrdemServicoResponse> listar() {
         return ordemServicoRepository.findAll(
@@ -127,6 +181,14 @@ public class OrdemServicoService {
             videoStorage.carregar(ordem.getVideoChave()),
             ordem.getVideoTipo()
         );
+    }
+
+    private OrdemServico buscarParaAtualizacao(Long id) {
+        return ordemServicoRepository.buscarParaAtualizacao(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Ordem de serviço não encontrada"
+            ));
     }
 
     private OrdemServico buscarEntidade(Long id) {
@@ -167,6 +229,12 @@ public class OrdemServicoService {
             ordem.isCarregadorRecebido(),
             ordem.getAcessoriosRecebidos(),
             ordem.getObservacoesRecebimento(),
+            ordem.getDiagnostico(),
+            ordem.getDescricaoOrcamento(),
+            ordem.getValorOrcamento(),
+            ordem.getOrcamentoEnviadoEm(),
+            ordem.getDecisaoOrcamentoEm(),
+            ordem.getObservacaoDecisao(),
             ordem.getStatus(),
             ordem.getRecebidoEm(),
             "/api/ordens-servico/" + ordem.getId() + "/video",

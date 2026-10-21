@@ -1,5 +1,8 @@
 package br.com.eletromotosbh.ordemservico;
 
 public enum StatusOrdemServico {
-    EM_DIAGNOSTICO
+    EM_DIAGNOSTICO,
+    AGUARDANDO_APROVACAO,
+    APROVADO,
+    REPROVADO
 }

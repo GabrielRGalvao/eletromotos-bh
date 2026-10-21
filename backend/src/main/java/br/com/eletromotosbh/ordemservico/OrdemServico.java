@@ -5,6 +5,7 @@ import br.com.eletromotosbh.mecanico.Mecanico;
 import br.com.eletromotosbh.veiculo.Veiculo;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
@@ -53,6 +54,24 @@ public class OrdemServico {
         columnDefinition = "TEXT"
     )
     private String observacoesRecebimento;
+
+    @Column(columnDefinition = "TEXT")
+    private String diagnostico;
+
+    @Column(name = "descricao_orcamento", columnDefinition = "TEXT")
+    private String descricaoOrcamento;
+
+    @Column(name = "valor_orcamento", precision = 12, scale = 2)
+    private BigDecimal valorOrcamento;
+
+    @Column(name = "orcamento_enviado_em")
+    private Instant orcamentoEnviadoEm;
+
+    @Column(name = "decisao_orcamento_em")
+    private Instant decisaoOrcamentoEm;
+
+    @Column(name = "observacao_decisao", columnDefinition = "TEXT")
+    private String observacaoDecisao;
 
     @Column(
         name = "video_chave",
@@ -111,6 +130,32 @@ public class OrdemServico {
         }
     }
 
+    public void registrarDiagnostico(
+            String diagnostico,
+            String descricaoOrcamento,
+            BigDecimal valorOrcamento
+    ) {
+        this.diagnostico = diagnostico;
+        this.descricaoOrcamento = descricaoOrcamento;
+        this.valorOrcamento = valorOrcamento;
+        this.orcamentoEnviadoEm = Instant.now();
+        this.decisaoOrcamentoEm = null;
+        this.observacaoDecisao = null;
+        this.status = StatusOrdemServico.AGUARDANDO_APROVACAO;
+    }
+
+    public void registrarDecisao(
+            boolean aprovado,
+            String observacao
+    ) {
+        this.status = aprovado
+            ? StatusOrdemServico.APROVADO
+            : StatusOrdemServico.REPROVADO;
+
+        this.observacaoDecisao = observacao;
+        this.decisaoOrcamentoEm = Instant.now();
+    }
+
     public Long getId() {
         return id;
     }
@@ -141,6 +186,30 @@ public class OrdemServico {
 
     public String getObservacoesRecebimento() {
         return observacoesRecebimento;
+    }
+
+    public String getDiagnostico() {
+        return diagnostico;
+    }
+
+    public String getDescricaoOrcamento() {
+        return descricaoOrcamento;
+    }
+
+    public BigDecimal getValorOrcamento() {
+        return valorOrcamento;
+    }
+
+    public Instant getOrcamentoEnviadoEm() {
+        return orcamentoEnviadoEm;
+    }
+
+    public Instant getDecisaoOrcamentoEm() {
+        return decisaoOrcamentoEm;
+    }
+
+    public String getObservacaoDecisao() {
+        return observacaoDecisao;
     }
 
     public String getVideoChave() {

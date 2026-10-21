@@ -1,5 +1,7 @@
 package br.com.eletromotosbh.ordemservico;
 
+import br.com.eletromotosbh.ordemservico.dto.DecisaoOrcamentoRequest;
+import br.com.eletromotosbh.ordemservico.dto.DiagnosticoOrcamentoRequest;
 import br.com.eletromotosbh.ordemservico.dto.OrdemServicoResponse;
 import br.com.eletromotosbh.ordemservico.dto.RecebimentoRequest;
 import jakarta.validation.Valid;
@@ -40,6 +42,31 @@ public class OrdemServicoController {
             agendamentoId,
             request,
             video
+        );
+    }
+
+    @PatchMapping(
+        value = "/{id}/diagnostico",
+        consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public OrdemServicoResponse registrarDiagnostico(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody DiagnosticoOrcamentoRequest request
+    ) {
+        return ordemServicoService.registrarDiagnostico(id, request);
+    }
+
+    @PatchMapping(
+        value = "/{id}/decisao-orcamento",
+        consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public OrdemServicoResponse registrarDecisaoOrcamento(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody DecisaoOrcamentoRequest request
+    ) {
+        return ordemServicoService.registrarDecisaoOrcamento(
+            id,
+            request
         );
     }
 
