@@ -1,7 +1,23 @@
 import { useEffect, useState } from 'react'
+import DecisaoOrcamentoForm from '../components/DecisaoOrcamentoForm'
+import DiagnosticoOrcamentoForm from '../components/DiagnosticoOrcamentoForm'
 import RecebimentoForm from '../components/RecebimentoForm'
 import { listarAgendamentos } from '../services/agendamentoService'
 import { listarOrdensServico } from '../services/ordemServicoService'
+
+const situacoes = {
+  EM_DIAGNOSTICO: 'Em diagnóstico',
+  AGUARDANDO_APROVACAO: 'Aguardando aprovação',
+  APROVADO: 'Aprovado',
+  REPROVADO: 'Reprovado',
+}
+
+const classesSituacao = {
+  EM_DIAGNOSTICO: 'situacao-em-diagnostico',
+  AGUARDANDO_APROVACAO: 'situacao-aguardando-aprovacao',
+  APROVADO: 'situacao-aprovado',
+  REPROVADO: 'situacao-reprovado',
+}
 
 function formatarDataHora(dataHora) {
   return new Intl.DateTimeFormat('pt-BR', {
@@ -17,6 +33,13 @@ function formatarTamanho(tamanho) {
   return `${megabytes.toLocaleString('pt-BR', {
     maximumFractionDigits: 1,
   })} MB`
+}
+
+function formatarMoeda(valor) {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(valor)
 }
 
 function mensagemErro(erro) {
@@ -70,6 +93,16 @@ export default function OrdensServicoPage() {
     setAtualizacao((atual) => atual + 1)
   }
 
+  function atualizarOrdem(ordemAtualizada) {
+    setOrdensServico((atuais) =>
+      atuais.map((ordem) =>
+        ordem.id === ordemAtualizada.id
+          ? ordemAtualizada
+          : ordem
+      )
+    )
+  }
+
   function aoSalvarOrdem(ordemServico) {
     setOrdensServico((atuais) => [
       ordemServico,
@@ -95,8 +128,8 @@ export default function OrdensServicoPage() {
         <p className="etiqueta">OFICINA</p>
         <h1>Ordens de serviço</h1>
         <p>
-          Receba veículos, registre a vistoria e acompanhe os
-          atendimentos.
+          Receba veículos, registre diagnósticos e acompanhe os
+          orçamentos.
         </p>
       </header>
 
@@ -156,8 +189,13 @@ export default function OrdensServicoPage() {
                       {ordemServico.clienteNome}
                     </h2>
 
-                    <span className="situacao-os situacao-em-diagnostico">
-                      Em diagnóstico
+                    <span
+                      className={`situacao-os ${
+                        classesSituacao[ordemServico.status] || ''
+                      }`}
+                    >
+                      {situacoes[ordemServico.status] ||
+                        ordemServico.status}
                     </span>
 
                     <dl>
@@ -205,6 +243,55 @@ export default function OrdensServicoPage() {
                         </>
                       )}
 
+                      {ordemServico.diagnostico && (
+                        <>
+                          <dt>Diagnóstico</dt>
+                          <dd className="observacoes-cliente">
+                            {ordemServico.diagnostico}
+                          </dd>
+
+                          <dt>Orçamento</dt>
+                          <dd className="observacoes-cliente">
+                            {
+                              ordemServico.descricaoOrcamento
+                            }
+                            {' — '}
+                            {formatarMoeda(
+                              ordemServico.valorOrcamento
+                            )}
+                          </dd>
+
+                          <dt>Orçamento enviado em</dt>
+                          <dd>
+                            {formatarDataHora(
+                              ordemServico.orcamentoEnviadoEm
+                            )}
+                          </dd>
+                        </>
+                      )}
+
+                      {ordemServico.decisaoOrcamentoEm && (
+                        <>
+                          <dt>Decisão registrada em</dt>
+                          <dd>
+                            {formatarDataHora(
+                              ordemServico.decisaoOrcamentoEm
+                            )}
+                          </dd>
+
+                          {ordemServico.observacaoDecisao && (
+                            <>
+                              <dt>Observação da decisão</dt>
+                              <dd className="observacoes-cliente">
+                                {
+                                  ordemServico.observacaoDecisao
+                                }
+                              </dd>
+                            </>
+                          )}
+                        </>
+                      )}
+
                       <dt>Vídeo de vistoria</dt>
                       <dd>
                         {formatarTamanho(
@@ -221,6 +308,22 @@ export default function OrdensServicoPage() {
                         Baixar vídeo
                       </a>
                     </div>
+
+                    {ordemServico.status ===
+                      'EM_DIAGNOSTICO' && (
+                      <DiagnosticoOrcamentoForm
+                        ordemServico={ordemServico}
+                        onSalvo={atualizarOrdem}
+                      />
+                    )}
+
+                    {ordemServico.status ===
+                      'AGUARDANDO_APROVACAO' && (
+                      <DecisaoOrcamentoForm
+                        ordemServico={ordemServico}
+                        onSalvo={atualizarOrdem}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>

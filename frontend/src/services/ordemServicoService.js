@@ -45,3 +45,39 @@ export async function receberAgendamento(
 
   return lerResposta(resposta)
 }
+
+export async function registrarDiagnostico(
+  ordemServicoId,
+  dados
+) {
+  const resposta = await fetch(
+    `/api/ordens-servico/${ordemServicoId}/diagnostico`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dados),
+    }
+  )
+
+  return lerResposta(resposta)
+}
+
+export async function registrarDecisaoOrcamento(
+  ordemServicoId,
+  dados
+) {
+  const resposta = await fetch(
+    `/api/ordens-servico/${ordemServicoId}/decisao-orcamento`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dados),
+    }
+  )
+
+  return lerResposta(resposta)
+}

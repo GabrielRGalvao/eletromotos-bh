@@ -367,3 +367,43 @@ fieldset:disabled button {
   border-radius: 8px;
   text-decoration: none;
 }
+
+.formulario-cartao {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #dce4ea;
+}
+
+.formulario-cartao h3 {
+  margin-top: 0;
+}
+
+.formulario-cartao fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.situacao-aguardando-aprovacao {
+  background: #fff4d6;
+  color: #735c00;
+}
+
+.situacao-aprovado {
+  background: #eaf5f2;
+  color: #065c4f;
+}
+
+.situacao-reprovado {
+  background: #fff1f0;
+  color: #b42318;
+}
+
+.botao-sucesso {
+  background: #087665;
+}
+
+.botao-sucesso:hover:not(:disabled) {
+  background: #065c4f;
+}
