@@ -1,136 +1,132 @@
-import { useEffect, useState } from 'react'
-import DecisaoOrcamentoForm from '../components/DecisaoOrcamentoForm'
-import DiagnosticoOrcamentoForm from '../components/DiagnosticoOrcamentoForm'
-import RecebimentoForm from '../components/RecebimentoForm'
-import { listarAgendamentos } from '../services/agendamentoService'
-import { listarOrdensServico } from '../services/ordemServicoService'
+import { useEffect, useState } from "react";
+import DecisaoOrcamentoForm from "../components/DecisaoOrcamentoForm";
+import DiagnosticoOrcamentoForm from "../components/DiagnosticoOrcamentoForm";
+import RecebimentoForm from "../components/RecebimentoForm";
+import { listarAgendamentos } from "../services/agendamentoService";
+import { listarOrdensServico } from "../services/ordemServicoService";
+import ExecucaoConclusaoForm from "../components/ExecucaoConclusaoForm";
 
 const situacoes = {
-  EM_DIAGNOSTICO: 'Em diagnóstico',
-  AGUARDANDO_APROVACAO: 'Aguardando aprovação',
-  APROVADO: 'Aprovado',
-  REPROVADO: 'Reprovado',
-}
+  EM_DIAGNOSTICO: "Em diagnóstico",
+  AGUARDANDO_APROVACAO: "Aguardando aprovação",
+  APROVADO: "Aprovado",
+  REPROVADO: "Reprovado",
+  EM_EXECUCAO: "Em execução",
+  CONCLUIDO: "Concluído",
+};
 
 const classesSituacao = {
-  EM_DIAGNOSTICO: 'situacao-em-diagnostico',
-  AGUARDANDO_APROVACAO: 'situacao-aguardando-aprovacao',
-  APROVADO: 'situacao-aprovado',
-  REPROVADO: 'situacao-reprovado',
-}
+  EM_DIAGNOSTICO: "situacao-em-diagnostico",
+  AGUARDANDO_APROVACAO: "situacao-aguardando-aprovacao",
+  APROVADO: "situacao-aprovado",
+  REPROVADO: "situacao-reprovado",
+  EM_EXECUCAO: "situacao-em-execucao",
+  CONCLUIDO: "situacao-concluido",
+};
 
 function formatarDataHora(dataHora) {
-  return new Intl.DateTimeFormat('pt-BR', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-    timeZone: 'America/Sao_Paulo',
-  }).format(new Date(dataHora))
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: "America/Sao_Paulo",
+  }).format(new Date(dataHora));
 }
 
 function formatarTamanho(tamanho) {
-  const megabytes = tamanho / (1024 * 1024)
+  const megabytes = tamanho / (1024 * 1024);
 
-  return `${megabytes.toLocaleString('pt-BR', {
+  return `${megabytes.toLocaleString("pt-BR", {
     maximumFractionDigits: 1,
-  })} MB`
+  })} MB`;
 }
 
 function formatarMoeda(valor) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(valor)
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(valor);
 }
 
 function mensagemErro(erro) {
   return erro instanceof TypeError
-    ? 'Não foi possível conectar ao servidor. Tente novamente.'
-    : erro.message
+    ? "Não foi possível conectar ao servidor. Tente novamente."
+    : erro.message;
 }
 
 export default function OrdensServicoPage() {
-  const [agendamentos, setAgendamentos] = useState([])
-  const [ordensServico, setOrdensServico] = useState([])
-  const [carregando, setCarregando] = useState(true)
-  const [erro, setErro] = useState('')
-  const [atualizacao, setAtualizacao] = useState(0)
+  const [agendamentos, setAgendamentos] = useState([]);
+  const [ordensServico, setOrdensServico] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
+  const [atualizacao, setAtualizacao] = useState(0);
 
   useEffect(() => {
-    const controller = new AbortController()
+    const controller = new AbortController();
 
     async function carregar() {
-      setCarregando(true)
-      setErro('')
+      setCarregando(true);
+      setErro("");
 
       try {
-        const [listaAgendamentos, listaOrdensServico] =
-          await Promise.all([
-            listarAgendamentos('', controller.signal),
-            listarOrdensServico(controller.signal),
-          ])
+        const [listaAgendamentos, listaOrdensServico] = await Promise.all([
+          listarAgendamentos("", controller.signal),
+          listarOrdensServico(controller.signal),
+        ]);
 
         if (!controller.signal.aborted) {
-          setAgendamentos(listaAgendamentos)
-          setOrdensServico(listaOrdensServico)
+          setAgendamentos(listaAgendamentos);
+          setOrdensServico(listaOrdensServico);
         }
       } catch (error) {
         if (!controller.signal.aborted) {
-          setErro(mensagemErro(error))
+          setErro(mensagemErro(error));
         }
       } finally {
         if (!controller.signal.aborted) {
-          setCarregando(false)
+          setCarregando(false);
         }
       }
     }
 
-    carregar()
+    carregar();
 
-    return () => controller.abort()
-  }, [atualizacao])
+    return () => controller.abort();
+  }, [atualizacao]);
 
   function atualizarLista() {
-    setAtualizacao((atual) => atual + 1)
+    setAtualizacao((atual) => atual + 1);
   }
 
   function atualizarOrdem(ordemAtualizada) {
     setOrdensServico((atuais) =>
       atuais.map((ordem) =>
-        ordem.id === ordemAtualizada.id
-          ? ordemAtualizada
-          : ordem
-      )
-    )
+        ordem.id === ordemAtualizada.id ? ordemAtualizada : ordem,
+      ),
+    );
   }
 
   function aoSalvarOrdem(ordemServico) {
-    setOrdensServico((atuais) => [
-      ordemServico,
-      ...atuais,
-    ])
+    setOrdensServico((atuais) => [ordemServico, ...atuais]);
 
     setAgendamentos((atuais) =>
       atuais.map((agendamento) =>
         agendamento.id === ordemServico.agendamentoId
-          ? { ...agendamento, status: 'RECEBIDO' }
-          : agendamento
-      )
-    )
+          ? { ...agendamento, status: "RECEBIDO" }
+          : agendamento,
+      ),
+    );
   }
 
   const agendamentosPendentes = agendamentos.filter(
-    (agendamento) => agendamento.status === 'AGENDADO'
-  )
+    (agendamento) => agendamento.status === "AGENDADO",
+  );
 
   return (
     <main className="pagina">
       <header className="cabecalho-pagina">
         <p className="etiqueta">OFICINA</p>
         <h1>Ordens de serviço</h1>
-        <p>
-          Receba veículos, registre diagnósticos e acompanhe os
-          orçamentos.
-        </p>
+        <p>Receba veículos, registre diagnósticos e acompanhe os orçamentos.</p>
       </header>
 
       {carregando && (
@@ -174,42 +170,30 @@ export default function OrdensServicoPage() {
             </p>
 
             {ordensServico.length === 0 ? (
-              <p className="aviso">
-                Nenhuma ordem de serviço aberta.
-              </p>
+              <p className="aviso">Nenhuma ordem de serviço aberta.</p>
             ) : (
               <ul className="lista-clientes">
                 {ordensServico.map((ordemServico) => (
-                  <li
-                    className="cartao-cliente"
-                    key={ordemServico.id}
-                  >
+                  <li className="cartao-cliente" key={ordemServico.id}>
                     <h2>
-                      OS #{ordemServico.id} —{' '}
-                      {ordemServico.clienteNome}
+                      OS #{ordemServico.id} — {ordemServico.clienteNome}
                     </h2>
 
                     <span
                       className={`situacao-os ${
-                        classesSituacao[ordemServico.status] || ''
+                        classesSituacao[ordemServico.status] || ""
                       }`}
                     >
-                      {situacoes[ordemServico.status] ||
-                        ordemServico.status}
+                      {situacoes[ordemServico.status] || ordemServico.status}
                     </span>
 
                     <dl>
                       <dt>Recebido em</dt>
-                      <dd>
-                        {formatarDataHora(
-                          ordemServico.recebidoEm
-                        )}
-                      </dd>
+                      <dd>{formatarDataHora(ordemServico.recebidoEm)}</dd>
 
                       <dt>Veículo</dt>
                       <dd>
-                        {ordemServico.veiculoMarca}{' '}
-                        {ordemServico.veiculoModelo}
+                        {ordemServico.veiculoMarca} {ordemServico.veiculoModelo}
                       </dd>
 
                       <dt>Mecânico responsável</dt>
@@ -223,8 +207,8 @@ export default function OrdensServicoPage() {
                       <dt>Carregador</dt>
                       <dd>
                         {ordemServico.carregadorRecebido
-                          ? 'Recebido'
-                          : 'Não recebido'}
+                          ? "Recebido"
+                          : "Não recebido"}
                       </dd>
 
                       <dt>Acessórios</dt>
@@ -236,9 +220,7 @@ export default function OrdensServicoPage() {
                         <>
                           <dt>Observações do recebimento</dt>
                           <dd className="observacoes-cliente">
-                            {
-                              ordemServico.observacoesRecebimento
-                            }
+                            {ordemServico.observacoesRecebimento}
                           </dd>
                         </>
                       )}
@@ -252,20 +234,14 @@ export default function OrdensServicoPage() {
 
                           <dt>Orçamento</dt>
                           <dd className="observacoes-cliente">
-                            {
-                              ordemServico.descricaoOrcamento
-                            }
-                            {' — '}
-                            {formatarMoeda(
-                              ordemServico.valorOrcamento
-                            )}
+                            {ordemServico.descricaoOrcamento}
+                            {" — "}
+                            {formatarMoeda(ordemServico.valorOrcamento)}
                           </dd>
 
                           <dt>Orçamento enviado em</dt>
                           <dd>
-                            {formatarDataHora(
-                              ordemServico.orcamentoEnviadoEm
-                            )}
+                            {formatarDataHora(ordemServico.orcamentoEnviadoEm)}
                           </dd>
                         </>
                       )}
@@ -274,18 +250,39 @@ export default function OrdensServicoPage() {
                         <>
                           <dt>Decisão registrada em</dt>
                           <dd>
-                            {formatarDataHora(
-                              ordemServico.decisaoOrcamentoEm
-                            )}
+                            {formatarDataHora(ordemServico.decisaoOrcamentoEm)}
                           </dd>
 
                           {ordemServico.observacaoDecisao && (
                             <>
                               <dt>Observação da decisão</dt>
                               <dd className="observacoes-cliente">
-                                {
-                                  ordemServico.observacaoDecisao
-                                }
+                                {ordemServico.observacaoDecisao}
+                              </dd>
+                            </>
+                          )}
+                        </>
+                      )}
+
+                      {ordemServico.execucaoIniciadaEm && (
+                        <>
+                          <dt>Execução iniciada em</dt>
+                          <dd>
+                            {formatarDataHora(ordemServico.execucaoIniciadaEm)}
+                          </dd>
+                        </>
+                      )}
+
+                      {ordemServico.concluidoEm && (
+                        <>
+                          <dt>Concluído em</dt>
+                          <dd>{formatarDataHora(ordemServico.concluidoEm)}</dd>
+
+                          {ordemServico.observacoesConclusao && (
+                            <>
+                              <dt>Observações de conclusão</dt>
+                              <dd className="observacoes-cliente">
+                                {ordemServico.observacoesConclusao}
                               </dd>
                             </>
                           )}
@@ -293,11 +290,7 @@ export default function OrdensServicoPage() {
                       )}
 
                       <dt>Vídeo de vistoria</dt>
-                      <dd>
-                        {formatarTamanho(
-                          ordemServico.videoTamanho
-                        )}
-                      </dd>
+                      <dd>{formatarTamanho(ordemServico.videoTamanho)}</dd>
                     </dl>
 
                     <div className="acoes-formulario acoes-cliente">
@@ -309,17 +302,23 @@ export default function OrdensServicoPage() {
                       </a>
                     </div>
 
-                    {ordemServico.status ===
-                      'EM_DIAGNOSTICO' && (
+                    {ordemServico.status === "EM_DIAGNOSTICO" && (
                       <DiagnosticoOrcamentoForm
                         ordemServico={ordemServico}
                         onSalvo={atualizarOrdem}
                       />
                     )}
 
-                    {ordemServico.status ===
-                      'AGUARDANDO_APROVACAO' && (
+                    {ordemServico.status === "AGUARDANDO_APROVACAO" && (
                       <DecisaoOrcamentoForm
+                        ordemServico={ordemServico}
+                        onSalvo={atualizarOrdem}
+                      />
+                    )}
+
+                    {(ordemServico.status === "APROVADO" ||
+                      ordemServico.status === "EM_EXECUCAO") && (
+                      <ExecucaoConclusaoForm
                         ordemServico={ordemServico}
                         onSalvo={atualizarOrdem}
                       />
@@ -332,5 +331,5 @@ export default function OrdensServicoPage() {
         </>
       )}
     </main>
-  )
+  );
 }

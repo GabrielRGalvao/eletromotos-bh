@@ -407,3 +407,13 @@ fieldset:disabled button {
 .botao-sucesso:hover:not(:disabled) {
   background: #065c4f;
 }
+
+.situacao-em-execucao {
+  background: #e7f0ff;
+  color: #1455a3;
+}
+
+.situacao-concluido {
+  background: #eaf5f2;
+  color: #065c4f;
+}

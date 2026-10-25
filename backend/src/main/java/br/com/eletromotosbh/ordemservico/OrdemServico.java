@@ -17,11 +17,7 @@ public class OrdemServico {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-        name = "agendamento_id",
-        nullable = false,
-        unique = true
-    )
+    @JoinColumn(name = "agendamento_id", nullable = false, unique = true)
     private Agendamento agendamento;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -32,27 +28,16 @@ public class OrdemServico {
     @JoinColumn(name = "mecanico_id", nullable = false)
     private Mecanico mecanico;
 
-    @Column(
-        name = "relato_cliente",
-        nullable = false,
-        columnDefinition = "TEXT"
-    )
+    @Column(name = "relato_cliente", nullable = false, columnDefinition = "TEXT")
     private String relatoCliente;
 
     @Column(name = "carregador_recebido", nullable = false)
     private boolean carregadorRecebido;
 
-    @Column(
-        name = "acessorios_recebidos",
-        nullable = false,
-        columnDefinition = "TEXT"
-    )
+    @Column(name = "acessorios_recebidos", nullable = false, columnDefinition = "TEXT")
     private String acessoriosRecebidos;
 
-    @Column(
-        name = "observacoes_recebimento",
-        columnDefinition = "TEXT"
-    )
+    @Column(name = "observacoes_recebimento", columnDefinition = "TEXT")
     private String observacoesRecebimento;
 
     @Column(columnDefinition = "TEXT")
@@ -73,12 +58,16 @@ public class OrdemServico {
     @Column(name = "observacao_decisao", columnDefinition = "TEXT")
     private String observacaoDecisao;
 
-    @Column(
-        name = "video_chave",
-        nullable = false,
-        unique = true,
-        length = 255
-    )
+    @Column(name = "execucao_iniciada_em")
+    private Instant execucaoIniciadaEm;
+
+    @Column(name = "concluido_em")
+    private Instant concluidoEm;
+
+    @Column(name = "observacoes_conclusao", columnDefinition = "TEXT")
+    private String observacoesConclusao;
+
+    @Column(name = "video_chave", nullable = false, unique = true, length = 255)
     private String videoChave;
 
     @Column(name = "video_tipo", nullable = false, length = 50)
@@ -89,14 +78,9 @@ public class OrdemServico {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private StatusOrdemServico status =
-        StatusOrdemServico.EM_DIAGNOSTICO;
+    private StatusOrdemServico status = StatusOrdemServico.EM_DIAGNOSTICO;
 
-    @Column(
-        name = "recebido_em",
-        nullable = false,
-        updatable = false
-    )
+    @Column(name = "recebido_em", nullable = false, updatable = false)
     private Instant recebidoEm;
 
     protected OrdemServico() {
@@ -109,8 +93,7 @@ public class OrdemServico {
             String observacoesRecebimento,
             String videoChave,
             String videoTipo,
-            long videoTamanho
-    ) {
+            long videoTamanho) {
         this.agendamento = agendamento;
         this.veiculo = agendamento.getVeiculo();
         this.mecanico = agendamento.getMecanico();
@@ -133,8 +116,7 @@ public class OrdemServico {
     public void registrarDiagnostico(
             String diagnostico,
             String descricaoOrcamento,
-            BigDecimal valorOrcamento
-    ) {
+            BigDecimal valorOrcamento) {
         this.diagnostico = diagnostico;
         this.descricaoOrcamento = descricaoOrcamento;
         this.valorOrcamento = valorOrcamento;
@@ -146,14 +128,24 @@ public class OrdemServico {
 
     public void registrarDecisao(
             boolean aprovado,
-            String observacao
-    ) {
+            String observacao) {
         this.status = aprovado
-            ? StatusOrdemServico.APROVADO
-            : StatusOrdemServico.REPROVADO;
+                ? StatusOrdemServico.APROVADO
+                : StatusOrdemServico.REPROVADO;
 
         this.observacaoDecisao = observacao;
         this.decisaoOrcamentoEm = Instant.now();
+    }
+
+    public void iniciarExecucao() {
+        this.status = StatusOrdemServico.EM_EXECUCAO;
+        this.execucaoIniciadaEm = Instant.now();
+    }
+
+    public void concluir(String observacoesConclusao) {
+        this.status = StatusOrdemServico.CONCLUIDO;
+        this.observacoesConclusao = observacoesConclusao;
+        this.concluidoEm = Instant.now();
     }
 
     public Long getId() {
@@ -230,5 +222,17 @@ public class OrdemServico {
 
     public Instant getRecebidoEm() {
         return recebidoEm;
+    }
+
+    public Instant getExecucaoIniciadaEm() {
+        return execucaoIniciadaEm;
+    }
+
+    public Instant getConcluidoEm() {
+        return concluidoEm;
+    }
+
+    public String getObservacoesConclusao() {
+        return observacoesConclusao;
     }
 }
