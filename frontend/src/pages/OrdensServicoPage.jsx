@@ -172,26 +172,32 @@ export default function OrdensServicoPage() {
             {ordensServico.length === 0 ? (
               <p className="aviso">Nenhuma ordem de serviço aberta.</p>
             ) : (
-              <ul className="lista-clientes">
+              <ul className="lista-clientes lista-ordens">
                 {ordensServico.map((ordemServico) => (
-                  <li className="cartao-cliente" key={ordemServico.id}>
-                    <h2>
-                      OS #{ordemServico.id} — {ordemServico.clienteNome}
-                    </h2>
+                  <li className="cartao-os" key={ordemServico.id}>
+                    <header className="cabecalho-os">
+                      <div>
+                        <p className="identificador-os">
+                          Ordem de serviço #{ordemServico.id}
+                        </p>
 
-                    <span
-                      className={`situacao-os ${
-                        classesSituacao[ordemServico.status] || ""
-                      }`}
-                    >
-                      {situacoes[ordemServico.status] || ordemServico.status}
-                    </span>
+                        <h2>{ordemServico.clienteNome}</h2>
+                      </div>
 
-                    <dl>
-                      <dt>Recebido em</dt>
+                      <span
+                        className={`situacao-os ${
+                          classesSituacao[ordemServico.status] || ""
+                        }`}
+                      >
+                        {situacoes[ordemServico.status] || ordemServico.status}
+                      </span>
+                    </header>
+
+                    <dl className="detalhes-os">
+                      <dt>Entrada na oficina</dt>
                       <dd>{formatarDataHora(ordemServico.recebidoEm)}</dd>
 
-                      <dt>Veículo</dt>
+                      <dt>Veículo atendido</dt>
                       <dd>
                         {ordemServico.veiculoMarca} {ordemServico.veiculoModelo}
                       </dd>
@@ -199,26 +205,26 @@ export default function OrdensServicoPage() {
                       <dt>Mecânico responsável</dt>
                       <dd>{ordemServico.mecanicoNome}</dd>
 
-                      <dt>Problema relatado</dt>
+                      <dt>Relato do cliente</dt>
                       <dd className="observacoes-cliente">
                         {ordemServico.relatoCliente}
                       </dd>
 
-                      <dt>Carregador</dt>
+                      <dt>Carregador recebido</dt>
                       <dd>
                         {ordemServico.carregadorRecebido
                           ? "Recebido"
                           : "Não recebido"}
                       </dd>
 
-                      <dt>Acessórios</dt>
+                      <dt>Itens recebidos</dt>
                       <dd className="observacoes-cliente">
                         {ordemServico.acessoriosRecebidos}
                       </dd>
 
                       {ordemServico.observacoesRecebimento && (
                         <>
-                          <dt>Observações do recebimento</dt>
+                          <dt>Condições no recebimento</dt>
                           <dd className="observacoes-cliente">
                             {ordemServico.observacoesRecebimento}
                           </dd>
@@ -227,7 +233,7 @@ export default function OrdensServicoPage() {
 
                       {ordemServico.diagnostico && (
                         <>
-                          <dt>Diagnóstico</dt>
+                          <dt>Diagnóstico técnico</dt>
                           <dd className="observacoes-cliente">
                             {ordemServico.diagnostico}
                           </dd>
@@ -255,7 +261,7 @@ export default function OrdensServicoPage() {
 
                           {ordemServico.observacaoDecisao && (
                             <>
-                              <dt>Observação da decisão</dt>
+                              <dt>Observação do cliente</dt>
                               <dd className="observacoes-cliente">
                                 {ordemServico.observacaoDecisao}
                               </dd>
@@ -266,7 +272,7 @@ export default function OrdensServicoPage() {
 
                       {ordemServico.execucaoIniciadaEm && (
                         <>
-                          <dt>Execução iniciada em</dt>
+                          <dt>Serviço iniciado em</dt>
                           <dd>
                             {formatarDataHora(ordemServico.execucaoIniciadaEm)}
                           </dd>
@@ -275,12 +281,12 @@ export default function OrdensServicoPage() {
 
                       {ordemServico.concluidoEm && (
                         <>
-                          <dt>Concluído em</dt>
+                          <dt>Serviço concluído em</dt>
                           <dd>{formatarDataHora(ordemServico.concluidoEm)}</dd>
 
                           {ordemServico.observacoesConclusao && (
                             <>
-                              <dt>Observações de conclusão</dt>
+                              <dt>Serviço realizado</dt>
                               <dd className="observacoes-cliente">
                                 {ordemServico.observacoesConclusao}
                               </dd>

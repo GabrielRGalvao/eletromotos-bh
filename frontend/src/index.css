@@ -417,3 +417,197 @@ fieldset:disabled button {
   background: #eaf5f2;
   color: #065c4f;
 }
+
+:root {
+  color: #172b4d;
+  background: #f4f8ff;
+}
+
+body {
+  background:
+    radial-gradient(circle at top right, #dbeafe 0, transparent 32%), #f4f8ff;
+}
+
+.barra-superior {
+  background: linear-gradient(120deg, #071a33, #0b3b74 58%, #0b5fa5);
+  border-bottom: 1px solid #ffffff24;
+  box-shadow: 0 8px 24px #071a3329;
+}
+
+.marca {
+  letter-spacing: -0.4px;
+}
+
+.pagina {
+  max-width: 1180px;
+}
+
+.etiqueta {
+  color: #0b63ce;
+}
+
+h1 {
+  color: #0b2447;
+  letter-spacing: -1px;
+}
+
+.cabecalho-pagina > p:last-child,
+.resumo {
+  color: #526b88;
+}
+
+.painel-formulario,
+.cartao-cliente,
+.aviso {
+  border-color: #d5e2f2;
+  box-shadow: 0 8px 24px #0b3b7410;
+}
+
+button {
+  background: linear-gradient(135deg, #0b63ce, #0757b4);
+  box-shadow: 0 4px 10px #0b63ce2e;
+}
+
+button:hover {
+  background: linear-gradient(135deg, #0757b4, #06478f);
+}
+
+.botao-secundario {
+  border-color: #0b63ce;
+  color: #0757b4;
+  box-shadow: none;
+}
+
+.botao-secundario:hover {
+  background: #eaf3ff;
+}
+
+.campo input,
+.campo textarea,
+.campo select {
+  border-color: #b8c9dd;
+}
+
+.campo input:focus-visible,
+.campo textarea:focus-visible,
+.campo select:focus-visible {
+  outline-color: #3b82f6;
+}
+
+.lista-ordens {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 390px), 1fr));
+}
+
+.cartao-os {
+  overflow: hidden;
+  border: 1px solid #d5e2f2;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px #0b3b7414;
+}
+
+.cabecalho-os {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid #e5edf7;
+  background: linear-gradient(135deg, #f8fbff, #edf5ff);
+}
+
+.identificador-os {
+  margin: 0 0 4px;
+  color: #0b63ce;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.cabecalho-os h2 {
+  margin: 0;
+  color: #102a4c;
+  font-size: 22px;
+  letter-spacing: -0.4px;
+}
+
+.detalhes-os {
+  display: grid;
+  gap: 4px;
+  padding: 18px 24px 4px;
+}
+
+.detalhes-os dt {
+  margin-top: 12px;
+  color: #58708d;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.detalhes-os dd {
+  margin: 0;
+  color: #1d3557;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.cartao-os > .acoes-formulario {
+  margin: 20px 24px 24px;
+}
+
+.cartao-os .formulario-cartao {
+  margin: 20px 24px 24px;
+  padding-top: 20px;
+}
+
+.situacao-os {
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.situacao-em-diagnostico {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #a16207;
+}
+
+.situacao-aguardando-aprovacao {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.situacao-aprovado,
+.situacao-concluido {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.situacao-em-execucao {
+  border-color: #c4b5fd;
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.situacao-reprovado {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+@media (max-width: 560px) {
+  .cabecalho-os {
+    flex-direction: column;
+  }
+
+  .cabecalho-os h2 {
+    font-size: 20px;
+  }
+}
