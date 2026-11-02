@@ -611,3 +611,66 @@ button:hover {
     font-size: 20px;
   }
 }
+
+.tela-login,
+.tela-carregamento {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top right, #dcecff, transparent 40%),
+    #f4f7fa;
+}
+
+.tela-carregamento {
+  color: #0b2447;
+  font-weight: 700;
+}
+
+.cartao-login {
+  width: min(100%, 430px);
+  padding: 36px;
+  border: 1px solid #d5e2f2;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 18px 45px #0b3b7424;
+}
+
+.cartao-login h1 {
+  margin-bottom: 8px;
+}
+
+.cartao-login > p {
+  color: #526b88;
+}
+
+.cartao-login button {
+  width: 100%;
+}
+
+.area-usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.botao-sair {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid #b9d6ff;
+  background: transparent;
+  box-shadow: none;
+}
+
+.botao-sair:hover {
+  background: #ffffff20;
+}
+
+@media (max-width: 700px) {
+  .area-usuario {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
