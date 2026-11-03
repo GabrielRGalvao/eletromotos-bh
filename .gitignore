@@ -14,3 +14,5 @@
 
 # Arquivos enviados pelos usuários
 /backend/uploads/
+
+/backups/
