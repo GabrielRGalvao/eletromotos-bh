@@ -13,13 +13,23 @@ import java.util.Optional;
 public interface AgendamentoRepository
         extends JpaRepository<Agendamento, Long> {
 
-    List<Agendamento> findByDataAgendamentoOrderByHoraAgendamentoAscIdAsc(
-        LocalDate dataAgendamento
-    );
+    @Query("""
+            select a from Agendamento a
+            join a.veiculo v
+            join v.cliente c
+            where (:data is null or a.dataAgendamento = :data)
+              and (
+                :busca is null
+                or lower(c.nome) like lower(concat('%', :busca, '%'))
+                or c.telefone like concat('%', :busca, '%')
+              )
+            order by a.dataAgendamento, a.horaAgendamento, a.id
+            """)
+    List<Agendamento> filtrar(
+            @Param("data") LocalDate data,
+            @Param("busca") String busca);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select a from Agendamento a where a.id = :id")
-    Optional<Agendamento> buscarParaRecebimento(
-        @Param("id") Long id
-    );
+    Optional<Agendamento> buscarParaRecebimento(@Param("id") Long id);
 }

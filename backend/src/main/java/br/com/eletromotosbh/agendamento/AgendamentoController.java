@@ -23,24 +23,21 @@ public class AgendamentoController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public AgendamentoResponse cadastrar(
-            @Valid @RequestBody AgendamentoRequest request
-    ) {
+            @Valid @RequestBody AgendamentoRequest request) {
         return agendamentoService.cadastrar(request);
     }
 
     @GetMapping
     public List<AgendamentoResponse> listar(
-            @RequestParam(name = "data", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate data
-    ) {
-        return agendamentoService.listar(data);
+            @RequestParam(name = "data", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data,
+
+            @RequestParam(name = "busca", required = false) String busca) {
+        return agendamentoService.listar(data, busca);
     }
 
     @GetMapping("/{id}")
     public AgendamentoResponse buscarPorId(
-            @PathVariable("id") Long id
-    ) {
+            @PathVariable("id") Long id) {
         return agendamentoService.buscarPorId(id);
     }
 }

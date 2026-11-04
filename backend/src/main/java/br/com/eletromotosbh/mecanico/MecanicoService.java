@@ -21,7 +21,10 @@ public class MecanicoService {
 
     @Transactional
     public MecanicoResponse cadastrar(MecanicoRequest request) {
-        Mecanico mecanico = new Mecanico(request.nome().trim());
+        Mecanico mecanico = new Mecanico(
+                request.nome().trim(),
+                mecanicoRepository.buscarMaiorOrdemRodizio() + 1);
+
         Mecanico salvo = mecanicoRepository.save(mecanico);
 
         return converterParaResponse(salvo);
@@ -32,14 +35,15 @@ public class MecanicoService {
         List<Mecanico> mecanicos;
 
         if (somenteAtivos) {
-            mecanicos = mecanicoRepository.findByAtivoTrueOrderByNomeAscIdAsc();
+            mecanicos = mecanicoRepository.findByAtivoTrueOrderByOrdemRodizioAscIdAsc();
         } else {
-            mecanicos = mecanicoRepository.findAll(Sort.by("nome", "id"));
+            mecanicos = mecanicoRepository.findAll(
+                    Sort.by("ordemRodizio", "id"));
         }
 
         return mecanicos.stream()
-            .map(this::converterParaResponse)
-            .toList();
+                .map(this::converterParaResponse)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -70,18 +74,16 @@ public class MecanicoService {
 
     private Mecanico encontrarMecanico(Long id) {
         return mecanicoRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Mecânico não encontrado"
-            ));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Mecânico não encontrado"));
     }
 
     private MecanicoResponse converterParaResponse(Mecanico mecanico) {
         return new MecanicoResponse(
-            mecanico.getId(),
-            mecanico.getNome(),
-            mecanico.isAtivo(),
-            mecanico.getDataCadastro()
-        );
+                mecanico.getId(),
+                mecanico.getNome(),
+                mecanico.isAtivo(),
+                mecanico.getDataCadastro());
     }
 }

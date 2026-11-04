@@ -18,14 +18,18 @@ public class Mecanico {
     @Column(nullable = false)
     private boolean ativo = true;
 
+    @Column(name = "ordem_rodizio", nullable = false)
+    private int ordemRodizio;
+
     @Column(name = "data_cadastro", nullable = false, updatable = false)
     private Instant dataCadastro;
 
     protected Mecanico() {
     }
 
-    public Mecanico(String nome) {
+    public Mecanico(String nome, int ordemRodizio) {
         this.nome = nome;
+        this.ordemRodizio = ordemRodizio;
     }
 
     @PrePersist
@@ -61,5 +65,9 @@ public class Mecanico {
 
     public Instant getDataCadastro() {
         return dataCadastro;
+    }
+
+    public int getOrdemRodizio() {
+        return ordemRodizio;
     }
 }

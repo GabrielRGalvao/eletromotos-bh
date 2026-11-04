@@ -1,38 +1,37 @@
 async function lerResposta(resposta) {
   if (!resposta.ok) {
-    const dados = await resposta.json().catch(() => ({}))
-
+    const dados = await resposta.json().catch(() => ({}));
     const erro = new Error(
-      dados.mensagem || 'Não foi possível completar a operação.'
-    )
-
-    erro.campos = dados.campos || {}
-    throw erro
+      dados.mensagem || "Não foi possível completar a operação.",
+    );
+    erro.campos = dados.campos || {};
+    throw erro;
   }
 
-  return resposta.json()
+  return resposta.json();
 }
 
-export async function listarAgendamentos(data, signal) {
-  const consulta = data
-    ? `?data=${encodeURIComponent(data)}`
-    : ''
+export async function listarAgendamentos(data = "", busca = "", signal) {
+  const parametros = new URLSearchParams();
 
-  const resposta = await fetch(`/api/agendamentos${consulta}`, {
-    signal,
-  })
+  if (data) parametros.set("data", data);
+  if (busca) parametros.set("busca", busca);
 
-  return lerResposta(resposta)
+  const consulta = parametros.toString();
+  const resposta = await fetch(
+    `/api/agendamentos${consulta ? `?${consulta}` : ""}`,
+    { signal },
+  );
+
+  return lerResposta(resposta);
 }
 
 export async function cadastrarAgendamento(agendamento) {
-  const resposta = await fetch('/api/agendamentos', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+  const resposta = await fetch("/api/agendamentos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(agendamento),
-  })
+  });
 
-  return lerResposta(resposta)
+  return lerResposta(resposta);
 }

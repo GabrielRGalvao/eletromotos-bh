@@ -619,8 +619,7 @@ button:hover {
   place-items: center;
   padding: 24px;
   background:
-    radial-gradient(circle at top right, #dcecff, transparent 40%),
-    #f4f7fa;
+    radial-gradient(circle at top right, #dcecff, transparent 40%), #f4f7fa;
 }
 
 .tela-carregamento {
@@ -673,4 +672,20 @@ button:hover {
     width: 100%;
     justify-content: space-between;
   }
+}
+
+.resumo-os {
+  margin: 6px 0 0;
+  color: #58708d;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.identificador-os {
+  display: inline-flex;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: #dbeafe;
+  color: #0757b4;
+  letter-spacing: 0.7px;
 }

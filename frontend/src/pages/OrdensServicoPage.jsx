@@ -47,6 +47,10 @@ function formatarMoeda(valor) {
   }).format(valor);
 }
 
+function formatarNumeroOrdem(id) {
+  return String(id).padStart(4, "0");
+}
+
 function mensagemErro(erro) {
   return erro instanceof TypeError
     ? "Não foi possível conectar ao servidor. Tente novamente."
@@ -69,7 +73,7 @@ export default function OrdensServicoPage() {
 
       try {
         const [listaAgendamentos, listaOrdensServico] = await Promise.all([
-          listarAgendamentos("", controller.signal),
+          listarAgendamentos("", "", controller.signal),
           listarOrdensServico(controller.signal),
         ]);
 
@@ -178,10 +182,17 @@ export default function OrdensServicoPage() {
                     <header className="cabecalho-os">
                       <div>
                         <p className="identificador-os">
-                          Ordem de serviço #{ordemServico.id}
+                          OS #{formatarNumeroOrdem(ordemServico.id)}
                         </p>
 
                         <h2>{ordemServico.clienteNome}</h2>
+
+                        <p className="resumo-os">
+                          {ordemServico.veiculoMarca}{" "}
+                          {ordemServico.veiculoModelo}
+                          {" · Mecânico: "}
+                          {ordemServico.mecanicoNome}
+                        </p>
                       </div>
 
                       <span

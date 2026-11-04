@@ -1,167 +1,132 @@
-import { useEffect, useState } from 'react'
-import { listarClientes } from '../services/clienteService'
-import { listarVeiculos } from '../services/veiculoService'
-import { listarMecanicosAtivos } from '../services/mecanicoService'
-import { cadastrarAgendamento } from '../services/agendamentoService'
+import { useEffect, useState } from "react";
+import { listarClientes } from "../services/clienteService";
+import { listarVeiculos } from "../services/veiculoService";
+import { cadastrarAgendamento } from "../services/agendamentoService";
 
 const valoresIniciais = {
-  clienteId: '',
-  veiculoId: '',
-  mecanicoId: '',
-  dataAgendamento: '',
-  horaAgendamento: '',
-  relatoCliente: '',
-}
+  clienteId: "",
+  veiculoId: "",
+  dataAgendamento: "",
+  horaAgendamento: "",
+  relatoCliente: "",
+};
 
 const obrigatorios = {
-  clienteId: 'Selecione o cliente',
-  veiculoId: 'Selecione o veículo',
-  mecanicoId: 'Selecione o mecânico',
-  dataAgendamento: 'Informe a data do agendamento',
-  horaAgendamento: 'Informe o horário do agendamento',
-  relatoCliente: 'Informe o problema relatado pelo cliente',
-}
+  clienteId: "Selecione o cliente",
+  veiculoId: "Selecione o veículo",
+  dataAgendamento: "Informe a data do agendamento",
+  horaAgendamento: "Informe o horário do agendamento",
+  relatoCliente: "Informe o problema relatado pelo cliente",
+};
 
 function mensagemErro(erro) {
   return erro instanceof TypeError
-    ? 'Não foi possível conectar ao servidor. Tente novamente.'
-    : erro.message
+    ? "Não foi possível conectar ao servidor. Tente novamente."
+    : erro.message;
 }
 
 function Campo({ nome, rotulo, erro, children }) {
   return (
     <div className="campo">
       <label htmlFor={`agendamento-${nome}`}>{rotulo}</label>
-
       {children}
 
       {erro && (
-        <span
-          className="erro-campo"
-          id={`erro-agendamento-${nome}`}
-        >
+        <span className="erro-campo" id={`erro-agendamento-${nome}`}>
           {erro}
         </span>
       )}
     </div>
-  )
+  );
 }
 
 export default function AgendamentoForm({ onSalvo }) {
-  const [dados, setDados] = useState(valoresIniciais)
+  const [dados, setDados] = useState(valoresIniciais);
+  const [clientes, setClientes] = useState([]);
+  const [veiculos, setVeiculos] = useState([]);
 
-  const [clientes, setClientes] = useState([])
-  const [mecanicos, setMecanicos] = useState([])
-  const [veiculos, setVeiculos] = useState([])
+  const [carregandoClientes, setCarregandoClientes] = useState(true);
+  const [carregandoVeiculos, setCarregandoVeiculos] = useState(false);
+  const [erroClientes, setErroClientes] = useState("");
+  const [erroVeiculos, setErroVeiculos] = useState("");
+  const [tentativaClientes, setTentativaClientes] = useState(0);
+  const [tentativaVeiculos, setTentativaVeiculos] = useState(0);
 
-  const [carregando, setCarregando] = useState(true)
-  const [carregandoVeiculos, setCarregandoVeiculos] = useState(false)
-
-  const [erroOpcoes, setErroOpcoes] = useState('')
-  const [erroVeiculos, setErroVeiculos] = useState('')
-
-  const [tentativaOpcoes, setTentativaOpcoes] = useState(0)
-  const [tentativaVeiculos, setTentativaVeiculos] = useState(0)
-
-  const [salvando, setSalvando] = useState(false)
-  const [erro, setErro] = useState('')
-  const [errosCampos, setErrosCampos] = useState({})
-  const [sucesso, setSucesso] = useState('')
-
-  const bloqueado =
-    salvando ||
-    carregando ||
-    carregandoVeiculos ||
-    Boolean(erroOpcoes) ||
-    Boolean(erroVeiculos) ||
-    clientes.length === 0 ||
-    mecanicos.length === 0
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
+  const [errosCampos, setErrosCampos] = useState({});
+  const [sucesso, setSucesso] = useState("");
 
   useEffect(() => {
-    const controller = new AbortController()
+    const controller = new AbortController();
 
-    async function carregar() {
-      setCarregando(true)
-      setErroOpcoes('')
-
-      try {
-        const [listaClientes, listaMecanicos] = await Promise.all([
-          listarClientes(controller.signal),
-          listarMecanicosAtivos(controller.signal),
-        ])
-
+    listarClientes(controller.signal)
+      .then((lista) => {
         if (!controller.signal.aborted) {
-          setClientes(listaClientes)
-          setMecanicos(listaMecanicos)
+          setClientes(lista);
+          setErroClientes("");
         }
-      } catch (error) {
+      })
+      .catch((error) => {
         if (!controller.signal.aborted) {
-          setErroOpcoes(mensagemErro(error))
+          setErroClientes(mensagemErro(error));
         }
-      } finally {
+      })
+      .finally(() => {
         if (!controller.signal.aborted) {
-          setCarregando(false)
+          setCarregandoClientes(false);
         }
-      }
-    }
+      });
 
-    carregar()
-
-    return () => controller.abort()
-  }, [tentativaOpcoes])
+    return () => controller.abort();
+  }, [tentativaClientes]);
 
   useEffect(() => {
-    if (!dados.clienteId) return
-
-    const controller = new AbortController()
-
-    async function carregar() {
-      setCarregandoVeiculos(true)
-      setErroVeiculos('')
-
-      try {
-        const lista = await listarVeiculos(
-          dados.clienteId,
-          controller.signal
-        )
-
-        if (!controller.signal.aborted) {
-          setVeiculos(lista)
-        }
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          setErroVeiculos(mensagemErro(error))
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setCarregandoVeiculos(false)
-        }
-      }
+    if (!dados.clienteId) {
+      return undefined;
     }
 
-    carregar()
+    const controller = new AbortController();
 
-    return () => controller.abort()
-  }, [dados.clienteId, tentativaVeiculos])
+    listarVeiculos(dados.clienteId, controller.signal)
+      .then((lista) => {
+        if (!controller.signal.aborted) {
+          setVeiculos(lista);
+          setErroVeiculos("");
+        }
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) {
+          setErroVeiculos(mensagemErro(error));
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setCarregandoVeiculos(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [dados.clienteId, tentativaVeiculos]);
 
   function alterarCampo(evento) {
-    const { name, value } = evento.target
+    const { name, value } = evento.target;
 
     setDados((atuais) => ({
       ...atuais,
       [name]: value,
-      ...(name === 'clienteId' ? { veiculoId: '' } : {}),
-    }))
+      ...(name === "clienteId" ? { veiculoId: "" } : {}),
+    }));
 
-    if (name === 'clienteId') {
-      setVeiculos([])
-      setErroVeiculos('')
-      setCarregandoVeiculos(Boolean(value))
+    if (name === "clienteId") {
+      setVeiculos([]);
+      setErroVeiculos("");
+      setCarregandoVeiculos(Boolean(value));
     }
 
-    setErro('')
-    setErrosCampos({})
-    setSucesso('')
+    setErro("");
+    setErrosCampos({});
+    setSucesso("");
   }
 
   function propriedades(nome) {
@@ -171,106 +136,92 @@ export default function AgendamentoForm({ onSalvo }) {
       value: dados[nome],
       onChange: alterarCampo,
       required: true,
-      'aria-invalid': Boolean(errosCampos[nome]),
-      'aria-describedby': errosCampos[nome]
+      "aria-invalid": Boolean(errosCampos[nome]),
+      "aria-describedby": errosCampos[nome]
         ? `erro-agendamento-${nome}`
         : undefined,
-    }
+    };
   }
 
   async function salvar(evento) {
-    evento.preventDefault()
-    if (bloqueado) return
+    evento.preventDefault();
 
-    const erros = {}
+    const erros = {};
 
     for (const [nome, mensagem] of Object.entries(obrigatorios)) {
       if (!dados[nome].trim()) {
-        erros[nome] = mensagem
+        erros[nome] = mensagem;
       }
     }
 
     if (
       dados.veiculoId &&
-      !veiculos.some(
-        (veiculo) => String(veiculo.id) === dados.veiculoId
-      )
+      !veiculos.some((veiculo) => String(veiculo.id) === dados.veiculoId)
     ) {
-      erros.veiculoId = 'Selecione um veículo deste cliente'
+      erros.veiculoId = "Selecione um veículo deste cliente";
     }
 
-    setSucesso('')
-    setErrosCampos(erros)
-    setErro('')
+    setSucesso("");
+    setErrosCampos(erros);
+    setErro("");
 
     if (Object.keys(erros).length > 0) {
-      setErro('Confira os campos informados.')
-      return
+      setErro("Confira os campos informados.");
+      return;
     }
 
-    setSalvando(true)
+    setSalvando(true);
 
     try {
       const salvo = await cadastrarAgendamento({
         veiculoId: Number(dados.veiculoId),
-        mecanicoId: Number(dados.mecanicoId),
         dataAgendamento: dados.dataAgendamento,
         horaAgendamento: dados.horaAgendamento,
         relatoCliente: dados.relatoCliente.trim(),
-      })
+      });
 
-      setDados(valoresIniciais)
-      setVeiculos([])
+      setDados(valoresIniciais);
+      setVeiculos([]);
       setSucesso(
-        `Agendamento #${salvo.id} cadastrado com sucesso.`
-      )
-
-      onSalvo(salvo)
+        `Agendamento #${salvo.id} cadastrado. Responsável: ${salvo.mecanicoNome}.`,
+      );
+      onSalvo(salvo);
     } catch (error) {
-      setErro(mensagemErro(error))
-      setErrosCampos(error.campos || {})
+      setErro(mensagemErro(error));
+      setErrosCampos(error.campos || {});
     } finally {
-      setSalvando(false)
+      setSalvando(false);
     }
   }
 
   return (
-    <section
-      className="painel-formulario"
-      aria-labelledby="titulo-agendamento"
-    >
+    <section className="painel-formulario" aria-labelledby="titulo-agendamento">
       <h2 id="titulo-agendamento">Novo agendamento</h2>
 
-      {carregando && (
-        <p role="status">Carregando clientes e mecânicos...</p>
+      {carregandoClientes && (
+        <p role="status">Carregando clientes...</p>
       )}
 
-      {!carregando && erroOpcoes && (
+      {!carregandoClientes && erroClientes && (
         <div className="aviso aviso-erro" role="alert">
-          <p>{erroOpcoes}</p>
-
+          <p>{erroClientes}</p>
           <button
             type="button"
-            onClick={() =>
-              setTentativaOpcoes((atual) => atual + 1)
-            }
+            onClick={() => {
+              setCarregandoClientes(true);
+              setTentativaClientes((atual) => atual + 1);
+            }}
           >
             Tentar novamente
           </button>
         </div>
       )}
 
-      {!carregando && !erroOpcoes && (
+      {!carregandoClientes && !erroClientes && (
         <>
           {clientes.length === 0 && (
             <p className="aviso">
               Cadastre um cliente na aba Clientes para agendar.
-            </p>
-          )}
-
-          {mecanicos.length === 0 && (
-            <p className="aviso">
-              Cadastre ou ative um mecânico na aba Mecânicos.
             </p>
           )}
 
@@ -286,12 +237,12 @@ export default function AgendamentoForm({ onSalvo }) {
                   rotulo="Cliente"
                   erro={errosCampos.clienteId}
                 >
-                  <select {...propriedades('clienteId')}>
+                  <select {...propriedades("clienteId")}>
                     <option value="">Selecione o cliente</option>
 
                     {clientes.map((cliente) => (
                       <option key={cliente.id} value={cliente.id}>
-                        {cliente.nome} — {cliente.telefone}
+                        {cliente.nome}
                       </option>
                     ))}
                   </select>
@@ -303,7 +254,7 @@ export default function AgendamentoForm({ onSalvo }) {
                   erro={errosCampos.veiculoId}
                 >
                   <select
-                    {...propriedades('veiculoId')}
+                    {...propriedades("veiculoId")}
                     disabled={
                       !dados.clienteId ||
                       carregandoVeiculos ||
@@ -314,32 +265,26 @@ export default function AgendamentoForm({ onSalvo }) {
 
                     {veiculos.map((veiculo) => (
                       <option key={veiculo.id} value={veiculo.id}>
-                        #{veiculo.id} — {veiculo.marca}{' '}
-                        {veiculo.modelo} — {veiculo.cor}
-                        {veiculo.placa
-                          ? ` — ${veiculo.placa}`
-                          : ''}
+                        #{veiculo.id} — {veiculo.marca} {veiculo.modelo} —{" "}
+                        {veiculo.cor}
+                        {veiculo.placa ? ` — ${veiculo.placa}` : ""}
                       </option>
                     ))}
                   </select>
 
                   {carregandoVeiculos && (
-                    <span role="status">
-                      Carregando veículos...
-                    </span>
+                    <span role="status">Carregando veículos...</span>
                   )}
 
                   {erroVeiculos && (
                     <div role="alert">
                       <p className="erro-campo">{erroVeiculos}</p>
-
                       <button
                         type="button"
-                        onClick={() =>
-                          setTentativaVeiculos(
-                            (atual) => atual + 1
-                          )
-                        }
+                        onClick={() => {
+                          setCarregandoVeiculos(true);
+                          setTentativaVeiculos((atual) => atual + 1);
+                        }}
                       >
                         Tentar novamente
                       </button>
@@ -351,29 +296,10 @@ export default function AgendamentoForm({ onSalvo }) {
                     !erroVeiculos &&
                     veiculos.length === 0 && (
                       <span>
-                        Este cliente não possui veículos.
-                        Cadastre um na aba Clientes.
+                        Este cliente não possui veículos. Cadastre um na aba
+                        Clientes.
                       </span>
                     )}
-                </Campo>
-
-                <Campo
-                  nome="mecanicoId"
-                  rotulo="Mecânico ativo"
-                  erro={errosCampos.mecanicoId}
-                >
-                  <select {...propriedades('mecanicoId')}>
-                    <option value="">Selecione o mecânico</option>
-
-                    {mecanicos.map((mecanico) => (
-                      <option
-                        key={mecanico.id}
-                        value={mecanico.id}
-                      >
-                        {mecanico.nome}
-                      </option>
-                    ))}
-                  </select>
                 </Campo>
 
                 <Campo
@@ -381,10 +307,7 @@ export default function AgendamentoForm({ onSalvo }) {
                   rotulo="Data"
                   erro={errosCampos.dataAgendamento}
                 >
-                  <input
-                    type="date"
-                    {...propriedades('dataAgendamento')}
-                  />
+                  <input type="date" {...propriedades("dataAgendamento")} />
                 </Campo>
 
                 <Campo
@@ -392,10 +315,7 @@ export default function AgendamentoForm({ onSalvo }) {
                   rotulo="Horário"
                   erro={errosCampos.horaAgendamento}
                 >
-                  <input
-                    type="time"
-                    {...propriedades('horaAgendamento')}
-                  />
+                  <input type="time" {...propriedades("horaAgendamento")} />
                 </Campo>
               </div>
 
@@ -405,16 +325,24 @@ export default function AgendamentoForm({ onSalvo }) {
                 erro={errosCampos.relatoCliente}
               >
                 <textarea
-                  {...propriedades('relatoCliente')}
+                  {...propriedades("relatoCliente")}
                   rows={4}
                   maxLength={5000}
                 />
               </Campo>
 
-              <button type="submit" disabled={bloqueado}>
-                {salvando
-                  ? 'Salvando...'
-                  : 'Cadastrar agendamento'}
+              <button
+                type="submit"
+                disabled={
+                  salvando ||
+                  carregandoClientes ||
+                  carregandoVeiculos ||
+                  Boolean(erroClientes) ||
+                  Boolean(erroVeiculos) ||
+                  clientes.length === 0
+                }
+              >
+                {salvando ? "Salvando..." : "Cadastrar agendamento"}
               </button>
             </fieldset>
           </form>
@@ -422,7 +350,9 @@ export default function AgendamentoForm({ onSalvo }) {
       )}
 
       {erro && (
-        <p className="erro-campo" role="alert">{erro}</p>
+        <p className="erro-campo" role="alert">
+          {erro}
+        </p>
       )}
 
       {sucesso && (
@@ -431,5 +361,5 @@ export default function AgendamentoForm({ onSalvo }) {
         </p>
       )}
     </section>
-  )
+  );
 }
