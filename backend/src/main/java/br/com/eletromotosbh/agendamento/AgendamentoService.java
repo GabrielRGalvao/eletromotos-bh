@@ -38,7 +38,8 @@ public class AgendamentoService {
     public AgendamentoResponse cadastrar(AgendamentoRequest request) {
         Veiculo veiculo = veiculoRepository.findById(request.veiculoId())
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Veículo não encontrado"));
+                        HttpStatus.NOT_FOUND,
+                        "Veículo não encontrado"));
 
         Mecanico mecanico = definirMecanicoDoRodizio();
 
@@ -54,13 +55,30 @@ public class AgendamentoService {
 
     @Transactional(readOnly = true)
     public List<AgendamentoResponse> listar(LocalDate data, String busca) {
-        String buscaNormalizada = busca == null ? null : busca.trim();
+        String buscaNormalizada = busca == null ? "" : busca.trim();
+        List<Agendamento> agendamentos;
 
-        if (buscaNormalizada != null && buscaNormalizada.isBlank()) {
-            buscaNormalizada = null;
+        if (data == null && buscaNormalizada.isBlank()) {
+            agendamentos = agendamentoRepository
+                    .findAllByOrderByDataAgendamentoAscHoraAgendamentoAscIdAsc();
+
+        } else if (data != null && buscaNormalizada.isBlank()) {
+            agendamentos = agendamentoRepository
+                    .findByDataAgendamentoOrderByDataAgendamentoAscHoraAgendamentoAscIdAsc(
+                            data);
+
+        } else if (data == null) {
+            agendamentos = agendamentoRepository
+                    .buscarPorClienteOuTelefone(buscaNormalizada);
+
+        } else {
+            agendamentos = agendamentoRepository
+                    .buscarPorDataEClienteOuTelefone(
+                            data,
+                            buscaNormalizada);
         }
 
-        return agendamentoRepository.filtrar(data, buscaNormalizada).stream()
+        return agendamentos.stream()
                 .map(this::converterParaResponse)
                 .toList();
     }
@@ -69,24 +87,26 @@ public class AgendamentoService {
     public AgendamentoResponse buscarPorId(Long id) {
         Agendamento agendamento = agendamentoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Agendamento não encontrado"));
+                        HttpStatus.NOT_FOUND,
+                        "Agendamento não encontrado"));
 
         return converterParaResponse(agendamento);
     }
 
     private Mecanico definirMecanicoDoRodizio() {
-        List<Mecanico> mecanicosAtivos = mecanicoRepository.findByAtivoTrueOrderByOrdemRodizioAscIdAsc();
+        ControleRodizioAgendamento controle = controleRodizioRepository
+                .buscarParaAtualizar()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Controle de rodízio não encontrado"));
+
+        List<Mecanico> mecanicosAtivos = mecanicoRepository
+                .findByAtivoTrueOrderByOrdemRodizioAscIdAsc();
 
         if (mecanicosAtivos.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Não há mecânicos ativos para receber o agendamento");
         }
-
-        ControleRodizioAgendamento controle = controleRodizioRepository
-                .buscarParaAtualizar()
-                .orElseThrow(() -> new IllegalStateException(
-                        "Controle de rodízio não encontrado"));
 
         int indiceUltimo = -1;
 

@@ -1,5 +1,6 @@
 package br.com.eletromotosbh.mecanico;
 
+import br.com.eletromotosbh.agendamento.ControleRodizioAgendamentoRepository;
 import br.com.eletromotosbh.mecanico.dto.MecanicoRequest;
 import br.com.eletromotosbh.mecanico.dto.MecanicoResponse;
 import org.springframework.data.domain.Sort;
@@ -14,13 +15,19 @@ import java.util.List;
 public class MecanicoService {
 
     private final MecanicoRepository mecanicoRepository;
+    private final ControleRodizioAgendamentoRepository controleRodizioRepository;
 
-    public MecanicoService(MecanicoRepository mecanicoRepository) {
+    public MecanicoService(
+            MecanicoRepository mecanicoRepository,
+            ControleRodizioAgendamentoRepository controleRodizioRepository) {
         this.mecanicoRepository = mecanicoRepository;
+        this.controleRodizioRepository = controleRodizioRepository;
     }
 
     @Transactional
     public MecanicoResponse cadastrar(MecanicoRequest request) {
+        bloquearControleRodizio();
+
         Mecanico mecanico = new Mecanico(
                 request.nome().trim(),
                 mecanicoRepository.buscarMaiorOrdemRodizio() + 1);
@@ -35,7 +42,8 @@ public class MecanicoService {
         List<Mecanico> mecanicos;
 
         if (somenteAtivos) {
-            mecanicos = mecanicoRepository.findByAtivoTrueOrderByOrdemRodizioAscIdAsc();
+            mecanicos = mecanicoRepository
+                    .findByAtivoTrueOrderByOrdemRodizioAscIdAsc();
         } else {
             mecanicos = mecanicoRepository.findAll(
                     Sort.by("ordemRodizio", "id"));
@@ -61,6 +69,8 @@ public class MecanicoService {
 
     @Transactional
     public MecanicoResponse alterarStatus(Long id, boolean ativo) {
+        bloquearControleRodizio();
+
         Mecanico mecanico = encontrarMecanico(id);
 
         if (ativo) {
@@ -70,6 +80,12 @@ public class MecanicoService {
         }
 
         return converterParaResponse(mecanico);
+    }
+
+    private void bloquearControleRodizio() {
+        controleRodizioRepository.buscarParaAtualizar()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Controle de rodízio não encontrado"));
     }
 
     private Mecanico encontrarMecanico(Long id) {
