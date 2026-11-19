@@ -1,102 +1,133 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 import {
   cadastrarVeiculo,
   listarVeiculos,
-} from '../services/veiculoService'
+  excluirVeiculo,
+} from "../services/veiculoService";
 
 const tipos = [
-  'Moto Elétrica',
-  'Scooter Elétrica',
-  'Patinete',
-  'Bicicleta Elétrica',
-  'Autopropelido',
-  'Triciclo Elétrico',
-  'Patinete Bimotor',
-  'Outros',
-]
+  "Moto Elétrica",
+  "Scooter Elétrica",
+  "Patinete",
+  "Bicicleta Elétrica",
+  "Autopropelido",
+  "Triciclo Elétrico",
+  "Patinete Bimotor",
+  "Outros",
+];
 
 const campos = [
-  { nome: 'marca', rotulo: 'Marca', limite: 100, obrigatorio: true },
-  { nome: 'modelo', rotulo: 'Modelo', limite: 100, obrigatorio: true },
-  { nome: 'cor', rotulo: 'Cor', limite: 50, obrigatorio: true },
-  { nome: 'placa', rotulo: 'Placa — opcional', limite: 20, obrigatorio: false },
-]
+  { nome: "marca", rotulo: "Marca", limite: 100, obrigatorio: true },
+  { nome: "modelo", rotulo: "Modelo", limite: 100, obrigatorio: true },
+  { nome: "cor", rotulo: "Cor", limite: 50, obrigatorio: true },
+  { nome: "placa", rotulo: "Placa — opcional", limite: 20, obrigatorio: false },
+];
 
 function mensagemErro(erro) {
   return erro instanceof TypeError
-    ? 'Não foi possível conectar. Confira se o backend está funcionando.'
-    : erro.message
+    ? "Não foi possível conectar. Confira se o backend está funcionando."
+    : erro.message;
 }
 
 export default function VeiculosClientePage({ cliente, onVoltar }) {
-  const [veiculos, setVeiculos] = useState([])
-  const [carregando, setCarregando] = useState(true)
-  const [erroLista, setErroLista] = useState('')
-  const [tentativa, setTentativa] = useState(0)
-  const [salvando, setSalvando] = useState(false)
-  const [erroCadastro, setErroCadastro] = useState('')
-  const [errosCampos, setErrosCampos] = useState({})
-  const [sucesso, setSucesso] = useState('')
+  const [veiculos, setVeiculos] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erroLista, setErroLista] = useState("");
+  const [tentativa, setTentativa] = useState(0);
+  const [salvando, setSalvando] = useState(false);
+  const [erroCadastro, setErroCadastro] = useState("");
+  const [errosCampos, setErrosCampos] = useState({});
+  const [sucesso, setSucesso] = useState("");
+  const [excluindoId, setExcluindoId] = useState(null);
+  const [erroExclusao, setErroExclusao] = useState("");
+  const [sucessoExclusao, setSucessoExclusao] = useState("");
 
   useEffect(() => {
-    const controller = new AbortController()
+    const controller = new AbortController();
 
     async function carregar() {
-      setCarregando(true)
-      setErroLista('')
+      setCarregando(true);
+      setErroLista("");
 
       try {
-        const dados = await listarVeiculos(cliente.id, controller.signal)
+        const dados = await listarVeiculos(cliente.id, controller.signal);
 
         if (!controller.signal.aborted) {
-          setVeiculos(dados)
+          setVeiculos(dados);
         }
       } catch (erro) {
         if (!controller.signal.aborted) {
-          setErroLista(mensagemErro(erro))
+          setErroLista(mensagemErro(erro));
         }
       } finally {
         if (!controller.signal.aborted) {
-          setCarregando(false)
+          setCarregando(false);
         }
       }
     }
 
-    carregar()
-    return () => controller.abort()
-  }, [cliente.id, tentativa])
+    carregar();
+    return () => controller.abort();
+  }, [cliente.id, tentativa]);
 
   async function salvar(evento) {
-    evento.preventDefault()
-    if (salvando) return
+    evento.preventDefault();
+    if (salvando) return;
 
-    const formulario = evento.currentTarget
-    const dados = new FormData(formulario)
+    const formulario = evento.currentTarget;
+    const dados = new FormData(formulario);
 
     const veiculo = {
       clienteId: cliente.id,
-      tipo: dados.get('tipo'),
-      marca: dados.get('marca').trim(),
-      modelo: dados.get('modelo').trim(),
-      cor: dados.get('cor').trim(),
-      placa: dados.get('placa').trim() || null,
-    }
+      tipo: dados.get("tipo"),
+      marca: dados.get("marca").trim(),
+      modelo: dados.get("modelo").trim(),
+      cor: dados.get("cor").trim(),
+      placa: dados.get("placa").trim() || null,
+    };
 
-    setSalvando(true)
-    setErroCadastro('')
-    setErrosCampos({})
-    setSucesso('')
+    setSalvando(true);
+    setErroCadastro("");
+    setErrosCampos({});
+    setSucesso("");
+    setErroExclusao("");
+    setSucessoExclusao("");
 
     try {
-      const salvo = await cadastrarVeiculo(veiculo)
-      setVeiculos((atuais) => [...atuais, salvo])
-      formulario.reset()
-      setSucesso('Veículo cadastrado com sucesso.')
+      const salvo = await cadastrarVeiculo(veiculo);
+      setVeiculos((atuais) => [...atuais, salvo]);
+      formulario.reset();
+      setSucesso("Veículo cadastrado com sucesso.");
     } catch (erro) {
-      setErroCadastro(mensagemErro(erro))
-      setErrosCampos(erro.campos || {})
+      setErroCadastro(mensagemErro(erro));
+      setErrosCampos(erro.campos || {});
     } finally {
-      setSalvando(false)
+      setSalvando(false);
+    }
+  }
+
+  async function excluir(veiculo) {
+    const confirmado = window.confirm(
+      `Deseja realmente excluir o veículo ${veiculo.marca} ${veiculo.modelo}?`,
+    );
+
+    if (!confirmado || excluindoId !== null) return;
+
+    setExcluindoId(veiculo.id);
+    setErroExclusao("");
+    setSucessoExclusao("");
+    setSucesso("");
+
+    try {
+      await excluirVeiculo(veiculo.id);
+
+      setVeiculos((atuais) => atuais.filter((item) => item.id !== veiculo.id));
+
+      setSucessoExclusao("Veículo excluído com sucesso.");
+    } catch (erro) {
+      setErroExclusao(mensagemErro(erro));
+    } finally {
+      setExcluindoId(null);
     }
   }
 
@@ -105,7 +136,7 @@ export default function VeiculosClientePage({ cliente, onVoltar }) {
       <button
         type="button"
         className="botao-secundario"
-        disabled={salvando}
+        disabled={salvando || excluindoId !== null}
         onClick={onVoltar}
       >
         Voltar para clientes
@@ -145,10 +176,8 @@ export default function VeiculosClientePage({ cliente, onVoltar }) {
             <p>Tipo, marca, modelo e cor são obrigatórios.</p>
 
             <form onSubmit={salvar} noValidate>
-              <fieldset disabled={salvando}>
-                <legend className="legenda-formulario">
-                  Dados do veículo
-                </legend>
+              <fieldset disabled={salvando || excluindoId !== null}>
+                <legend className="legenda-formulario">Dados do veículo</legend>
 
                 <div className="grade-formulario">
                   <div className="campo">
@@ -160,12 +189,16 @@ export default function VeiculosClientePage({ cliente, onVoltar }) {
                       required
                       aria-invalid={Boolean(errosCampos.tipo)}
                       aria-describedby={
-                        errosCampos.tipo ? 'erro-veiculo-tipo' : undefined
+                        errosCampos.tipo ? "erro-veiculo-tipo" : undefined
                       }
                     >
-                      <option value="" disabled>Selecione o tipo</option>
+                      <option value="" disabled>
+                        Selecione o tipo
+                      </option>
                       {tipos.map((tipo) => (
-                        <option key={tipo} value={tipo}>{tipo}</option>
+                        <option key={tipo} value={tipo}>
+                          {tipo}
+                        </option>
                       ))}
                     </select>
 
@@ -207,22 +240,36 @@ export default function VeiculosClientePage({ cliente, onVoltar }) {
                 </div>
 
                 <button type="submit">
-                  {salvando ? 'Salvando...' : 'Salvar veículo'}
+                  {salvando ? "Salvando..." : "Salvar veículo"}
                 </button>
               </fieldset>
 
               {erroCadastro && (
-                <p className="erro-campo" role="alert">{erroCadastro}</p>
+                <p className="erro-campo" role="alert">
+                  {erroCadastro}
+                </p>
               )}
               {sucesso && (
-                <p className="mensagem-sucesso" role="status">{sucesso}</p>
+                <p className="mensagem-sucesso" role="status">
+                  {sucesso}
+                </p>
               )}
             </form>
           </section>
 
-          <p className="resumo">
-            {veiculos.length} veículo(s) cadastrado(s)
-          </p>
+          <p className="resumo">{veiculos.length} veículo(s) cadastrado(s)</p>
+
+          {erroExclusao && (
+            <div className="aviso aviso-erro" role="alert">
+              {erroExclusao}
+            </div>
+          )}
+
+          {sucessoExclusao && (
+            <p className="mensagem-sucesso" role="status">
+              {sucessoExclusao}
+            </p>
+          )}
 
           {veiculos.length === 0 ? (
             <p className="aviso">Este cliente ainda não possui veículos.</p>
@@ -230,15 +277,28 @@ export default function VeiculosClientePage({ cliente, onVoltar }) {
             <ul className="lista-clientes">
               {veiculos.map((veiculo) => (
                 <li className="cartao-cliente" key={veiculo.id}>
-                  <h2>{veiculo.marca} {veiculo.modelo}</h2>
+                  <h2>
+                    {veiculo.marca} {veiculo.modelo}
+                  </h2>
                   <dl>
                     <dt>Tipo</dt>
                     <dd>{veiculo.tipo}</dd>
                     <dt>Cor</dt>
                     <dd>{veiculo.cor}</dd>
                     <dt>Placa</dt>
-                    <dd>{veiculo.placa || 'Não informada'}</dd>
+                    <dd>{veiculo.placa || "Não informada"}</dd>
                   </dl>
+
+                  <button
+                    type="button"
+                    className="botao-secundario"
+                    disabled={excluindoId !== null || salvando}
+                    onClick={() => excluir(veiculo)}
+                  >
+                    {excluindoId === veiculo.id
+                      ? "Excluindo..."
+                      : "Excluir veículo"}
+                  </button>
                 </li>
               ))}
             </ul>
@@ -246,5 +306,5 @@ export default function VeiculosClientePage({ cliente, onVoltar }) {
         </>
       )}
     </main>
-  )
+  );
 }

@@ -1,5 +1,7 @@
+
 package br.com.eletromotosbh.veiculo;
 
+import br.com.eletromotosbh.agendamento.AgendamentoRepository;
 import br.com.eletromotosbh.cliente.Cliente;
 import br.com.eletromotosbh.cliente.ClienteRepository;
 import br.com.eletromotosbh.veiculo.dto.VeiculoRequest;
@@ -16,13 +18,16 @@ public class VeiculoService {
 
     private final VeiculoRepository veiculoRepository;
     private final ClienteRepository clienteRepository;
+    private final AgendamentoRepository agendamentoRepository;
 
     public VeiculoService(
             VeiculoRepository veiculoRepository,
-            ClienteRepository clienteRepository
+            ClienteRepository clienteRepository,
+            AgendamentoRepository agendamentoRepository
     ) {
         this.veiculoRepository = veiculoRepository;
         this.clienteRepository = clienteRepository;
+        this.agendamentoRepository = agendamentoRepository;
     }
 
     @Transactional
@@ -80,6 +85,24 @@ public class VeiculoService {
             ));
 
         return converterParaResponse(veiculo);
+    }
+
+    @Transactional
+    public void excluir(Long id) {
+        Veiculo veiculo = veiculoRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Veículo não encontrado"
+            ));
+
+        if (agendamentoRepository.existsByVeiculoId(id)) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Este veículo não pode ser excluído porque possui histórico de agendamentos."
+            );
+        }
+
+        veiculoRepository.delete(veiculo);
     }
 
     private VeiculoResponse converterParaResponse(Veiculo veiculo) {

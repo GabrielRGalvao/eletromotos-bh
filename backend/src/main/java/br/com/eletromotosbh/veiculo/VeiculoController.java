@@ -1,3 +1,4 @@
+
 package br.com.eletromotosbh.veiculo;
 
 import br.com.eletromotosbh.veiculo.dto.VeiculoRequest;
@@ -36,5 +37,11 @@ public class VeiculoController {
     @GetMapping("/{id}")
     public VeiculoResponse buscarPorId(@PathVariable("id") Long id) {
         return veiculoService.buscarPorId(id);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void excluir(@PathVariable("id") Long id) {
+        veiculoService.excluir(id);
     }
 }

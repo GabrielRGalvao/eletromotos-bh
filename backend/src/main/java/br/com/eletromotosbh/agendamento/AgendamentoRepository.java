@@ -1,3 +1,4 @@
+
 package br.com.eletromotosbh.agendamento;
 
 import jakarta.persistence.LockModeType;
@@ -48,4 +49,6 @@ public interface AgendamentoRepository
         @Query("select a from Agendamento a where a.id = :id")
         Optional<Agendamento> buscarParaRecebimento(
                         @Param("id") Long id);
+
+        boolean existsByVeiculoId(Long veiculoId);
 }
