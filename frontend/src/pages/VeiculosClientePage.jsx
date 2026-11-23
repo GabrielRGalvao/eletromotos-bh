@@ -37,6 +37,12 @@ function normalizarTexto(valor) {
     .trim();
 }
 
+function normalizarPlaca(valor) {
+  return String(valor ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
 export default function VeiculosClientePage({ cliente, onVoltar }) {
   const [veiculos, setVeiculos] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -52,12 +58,16 @@ export default function VeiculosClientePage({ cliente, onVoltar }) {
   const [pesquisa, setPesquisa] = useState("");
 
   const termoPesquisa = normalizarTexto(pesquisa);
+  const termoPlaca = normalizarPlaca(pesquisa);
 
   const veiculosFiltrados = veiculos.filter((veiculo) => {
     if (!termoPesquisa) return true;
 
-    return [veiculo.marca, veiculo.modelo, veiculo.placa, veiculo.tipo].some(
-      (campo) => normalizarTexto(campo).includes(termoPesquisa),
+    return (
+      [veiculo.marca, veiculo.modelo, veiculo.tipo].some((campo) =>
+        normalizarTexto(campo).includes(termoPesquisa),
+      ) ||
+      (termoPlaca && normalizarPlaca(veiculo.placa).includes(termoPlaca))
     );
   });
 
