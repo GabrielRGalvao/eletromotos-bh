@@ -3,6 +3,18 @@ import ClienteForm from "../components/ClienteForm";
 import { listarClientes, excluirCliente } from "../services/clienteService";
 import VeiculosClientePage from "./VeiculosClientePage";
 
+function normalizarTexto(valor) {
+  return String(valor ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function somenteNumeros(valor) {
+  return String(valor ?? "").replace(/\D/g, "");
+}
+
 export default function ClientesPage() {
   const [clientes, setClientes] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -13,8 +25,25 @@ export default function ClientesPage() {
   const [excluindoId, setExcluindoId] = useState(null);
   const [erroExclusao, setErroExclusao] = useState("");
   const [clienteDosVeiculos, setClienteDosVeiculos] = useState(null);
+  const [pesquisa, setPesquisa] = useState("");
 
   const ocupado = salvando || excluindoId !== null;
+  const termoTexto = normalizarTexto(pesquisa);
+  const termoNumerico = somenteNumeros(pesquisa);
+
+  const clientesFiltrados = clientes.filter((cliente) => {
+    if (!pesquisa.trim()) return true;
+
+    const nomeCorresponde = normalizarTexto(cliente.nome).includes(termoTexto);
+    const telefoneCorresponde =
+      termoNumerico.length > 0 &&
+      somenteNumeros(cliente.telefone).includes(termoNumerico);
+    const cpfCorresponde =
+      termoNumerico.length > 0 &&
+      somenteNumeros(cliente.cpf).includes(termoNumerico);
+
+    return nomeCorresponde || telefoneCorresponde || cpfCorresponde;
+  });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -168,13 +197,32 @@ export default function ClientesPage() {
             </p>
           )}
 
-          <p className="resumo">{clientes.length} cliente(s) cadastrado(s)</p>
+          <section className="campo" aria-label="Pesquisar clientes">
+            <label htmlFor="pesquisa-clientes">Pesquisar clientes</label>
+            <input
+              id="pesquisa-clientes"
+              type="search"
+              value={pesquisa}
+              onChange={(evento) => setPesquisa(evento.target.value)}
+              placeholder="Digite nome, telefone ou CPF"
+            />
+          </section>
+
+          <p className="resumo">
+            {pesquisa.trim()
+              ? `${clientesFiltrados.length} de ${clientes.length} cliente(s) encontrado(s)`
+              : `${clientes.length} cliente(s) cadastrado(s)`}
+          </p>
 
           {clientes.length === 0 ? (
             <p className="aviso">Nenhum cliente cadastrado ainda.</p>
+          ) : clientesFiltrados.length === 0 ? (
+            <p className="aviso">
+              Nenhum cliente encontrado para essa pesquisa.
+            </p>
           ) : (
             <ul className="lista-clientes">
-              {clientes.map((cliente) => (
+              {clientesFiltrados.map((cliente) => (
                 <li className="cartao-cliente" key={cliente.id}>
                   <h2>{cliente.nome}</h2>
                   <dl>
@@ -203,7 +251,7 @@ export default function ClientesPage() {
                     >
                       Veículos
                     </button>
-                    
+
                     <button
                       type="button"
                       className="botao-secundario"

@@ -29,6 +29,14 @@ function mensagemErro(erro) {
     : erro.message;
 }
 
+function normalizarTexto(valor) {
+  return String(valor ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 export default function VeiculosClientePage({ cliente, onVoltar }) {
   const [veiculos, setVeiculos] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -41,6 +49,17 @@ export default function VeiculosClientePage({ cliente, onVoltar }) {
   const [excluindoId, setExcluindoId] = useState(null);
   const [erroExclusao, setErroExclusao] = useState("");
   const [sucessoExclusao, setSucessoExclusao] = useState("");
+  const [pesquisa, setPesquisa] = useState("");
+
+  const termoPesquisa = normalizarTexto(pesquisa);
+
+  const veiculosFiltrados = veiculos.filter((veiculo) => {
+    if (!termoPesquisa) return true;
+
+    return [veiculo.marca, veiculo.modelo, veiculo.placa, veiculo.tipo].some(
+      (campo) => normalizarTexto(campo).includes(termoPesquisa),
+    );
+  });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -257,8 +276,6 @@ export default function VeiculosClientePage({ cliente, onVoltar }) {
             </form>
           </section>
 
-          <p className="resumo">{veiculos.length} veículo(s) cadastrado(s)</p>
-
           {erroExclusao && (
             <div className="aviso aviso-erro" role="alert">
               {erroExclusao}
@@ -271,11 +288,34 @@ export default function VeiculosClientePage({ cliente, onVoltar }) {
             </p>
           )}
 
+          {veiculos.length > 0 && (
+            <section className="campo" aria-label="Pesquisar veículos">
+              <label htmlFor="pesquisa-veiculos">Pesquisar veículos</label>
+              <input
+                id="pesquisa-veiculos"
+                type="search"
+                value={pesquisa}
+                onChange={(evento) => setPesquisa(evento.target.value)}
+                placeholder="Digite marca, modelo, placa ou tipo"
+              />
+            </section>
+          )}
+
+          <p className="resumo">
+            {pesquisa.trim()
+              ? `${veiculosFiltrados.length} de ${veiculos.length} veículo(s) encontrado(s)`
+              : `${veiculos.length} veículo(s) cadastrado(s)`}
+          </p>
+
           {veiculos.length === 0 ? (
             <p className="aviso">Este cliente ainda não possui veículos.</p>
+          ) : veiculosFiltrados.length === 0 ? (
+            <p className="aviso">
+              Nenhum veículo encontrado para essa pesquisa.
+            </p>
           ) : (
             <ul className="lista-clientes">
-              {veiculos.map((veiculo) => (
+              {veiculosFiltrados.map((veiculo) => (
                 <li className="cartao-cliente" key={veiculo.id}>
                   <h2>
                     {veiculo.marca} {veiculo.modelo}

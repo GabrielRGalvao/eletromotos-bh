@@ -1,39 +1,45 @@
-import { useState } from 'react'
-import {
-  cadastrarCliente,
-  atualizarCliente,
-} from '../services/clienteService'
+import { useState } from "react";
+import { cadastrarCliente, atualizarCliente } from "../services/clienteService";
 
 const campos = [
   {
-    nome: 'nome',
-    rotulo: 'Nome',
-    tipo: 'text',
+    nome: "nome",
+    rotulo: "Nome",
+    tipo: "text",
     limite: 150,
     obrigatorio: true,
   },
   {
-    nome: 'telefone',
-    rotulo: 'Telefone',
-    tipo: 'tel',
+    nome: "telefone",
+    rotulo: "Telefone",
+    tipo: "tel",
     limite: 20,
     obrigatorio: true,
   },
   {
-    nome: 'email',
-    rotulo: 'Email',
-    tipo: 'email',
+    nome: "email",
+    rotulo: "Email",
+    tipo: "email",
     limite: 254,
     obrigatorio: false,
   },
   {
-    nome: 'cpf',
-    rotulo: 'CPF (somente números)',
-    tipo: 'text',
-    limite: 11,
+    nome: "cpf",
+    rotulo: "CPF",
+    tipo: "text",
+    limite: 14,
     obrigatorio: false,
   },
-]
+];
+
+function formatarCpf(valor) {
+  const numeros = valor.replace(/\D/g, "").slice(0, 11);
+
+  return numeros
+    .replace(/^(\d{3})(\d)/, "$1.$2")
+    .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1-$2");
+}
 
 export default function ClienteForm({
   cliente,
@@ -42,56 +48,57 @@ export default function ClienteForm({
   salvando,
   onSalvandoChange,
 }) {
-  const [erro, setErro] = useState('')
-  const [errosCampos, setErrosCampos] = useState({})
-  const editando = Boolean(cliente)
+  const [erro, setErro] = useState("");
+  const [errosCampos, setErrosCampos] = useState({});
+  const editando = Boolean(cliente);
 
-    async function enviar(evento) {
-    evento.preventDefault()
+  async function enviar(evento) {
+    evento.preventDefault();
 
-    if (salvando) return
+    if (salvando) return;
 
-    const formulario = evento.currentTarget
-    const dados = new FormData(formulario)
+    const formulario = evento.currentTarget;
+    const dados = new FormData(formulario);
 
     const dadosCliente = {
-      nome: dados.get('nome').trim(),
-      telefone: dados.get('telefone').trim(),
-      email: dados.get('email').trim() || null,
-      cpf: dados.get('cpf').trim() || null,
-      observacoes: dados.get('observacoes').trim() || null,
-    }
+      nome: dados.get("nome").trim(),
+      telefone: dados.get("telefone").trim(),
+      email: dados.get("email").trim() || null,
+      cpf: dados.get("cpf").replace(/\D/g, "") || null,
+      observacoes: dados.get("observacoes").trim() || null,
+    };
 
-    onSalvandoChange(true)
-    setErro('')
-    setErrosCampos({})
+    onSalvandoChange(true);
+    setErro("");
+    setErrosCampos({});
 
     try {
       const clienteSalvo = editando
         ? await atualizarCliente(cliente.id, dadosCliente)
-        : await cadastrarCliente(dadosCliente)
+        : await cadastrarCliente(dadosCliente);
 
       if (!editando) {
-        formulario.reset()
+        formulario.reset();
       }
 
-      onSalvo(clienteSalvo)
+      onSalvo(clienteSalvo);
     } catch (error) {
       setErro(
         error instanceof TypeError
-          ? 'Não foi possível conectar. Confira sua conexão e tente novamente.'
-          : error.message
-      )
-      setErrosCampos(error.campos || {})
+          ? "Não foi possível conectar. Confira sua conexão e tente novamente."
+          : error.message,
+      );
+      setErrosCampos(error.campos || {});
     } finally {
-      onSalvandoChange(false)
+      onSalvandoChange(false);
     }
   }
 
   return (
     <section className="painel-formulario" aria-labelledby="titulo-cadastro">
       <h2 id="titulo-cadastro">
-        {editando ? 'Editar cliente' : 'Novo cliente'}</h2>
+        {editando ? "Editar cliente" : "Novo cliente"}
+      </h2>
       <p>Nome e telefone são obrigatórios.</p>
 
       <form onSubmit={enviar} noValidate>
@@ -103,7 +110,7 @@ export default function ClienteForm({
               <div className="campo" key={campo.nome}>
                 <label htmlFor={`cliente-${campo.nome}`}>
                   {campo.rotulo}
-                  {!campo.obrigatorio && ' — opcional'}
+                  {!campo.obrigatorio && " — opcional"}
                 </label>
 
                 <input
@@ -112,20 +119,32 @@ export default function ClienteForm({
                   type={campo.tipo}
                   maxLength={campo.limite}
                   required={campo.obrigatorio}
-                  defaultValue={cliente?.[campo.nome] ?? ''}
+                  defaultValue={
+                    campo.nome === "cpf"
+                      ? formatarCpf(cliente?.cpf ?? "")
+                      : (cliente?.[campo.nome] ?? "")
+                  }
+                  inputMode={campo.nome === "cpf" ? "numeric" : undefined}
+                  placeholder={
+                    campo.nome === "cpf" ? "000.000.000-00" : undefined
+                  }
+                  onChange={
+                    campo.nome === "cpf"
+                      ? (evento) => {
+                          evento.target.value = formatarCpf(
+                            evento.target.value,
+                          );
+                        }
+                      : undefined
+                  }
                   aria-invalid={Boolean(errosCampos[campo.nome])}
                   aria-describedby={
-                    errosCampos[campo.nome]
-                      ? `erro-${campo.nome}`
-                      : undefined
+                    errosCampos[campo.nome] ? `erro-${campo.nome}` : undefined
                   }
                 />
 
                 {errosCampos[campo.nome] && (
-                  <span
-                    className="erro-campo"
-                    id={`erro-${campo.nome}`}
-                  >
+                  <span className="erro-campo" id={`erro-${campo.nome}`}>
                     {errosCampos[campo.nome]}
                   </span>
                 )}
@@ -134,24 +153,22 @@ export default function ClienteForm({
           </div>
 
           <div className="campo">
-            <label htmlFor="cliente-observacoes">
-              Observações — opcional
-            </label>
+            <label htmlFor="cliente-observacoes">Observações — opcional</label>
             <textarea
               id="cliente-observacoes"
               name="observacoes"
               rows={3}
-              defaultValue={cliente?.observacoes ?? ''}
+              defaultValue={cliente?.observacoes ?? ""}
             />
           </div>
 
           <div className="acoes-formulario">
             <button type="submit">
               {salvando
-                ? 'Salvando...'
+                ? "Salvando..."
                 : editando
-                  ? 'Salvar alterações'
-                  : 'Salvar cliente'}
+                  ? "Salvar alterações"
+                  : "Salvar cliente"}
             </button>
 
             {editando && (
@@ -166,8 +183,12 @@ export default function ClienteForm({
           </div>
         </fieldset>
 
-        {erro && <p className="erro-campo" role="alert">{erro}</p>}
+        {erro && (
+          <p className="erro-campo" role="alert">
+            {erro}
+          </p>
+        )}
       </form>
     </section>
-  )
+  );
 }
