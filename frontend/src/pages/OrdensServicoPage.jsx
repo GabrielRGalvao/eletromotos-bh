@@ -13,6 +13,7 @@ const situacoes = {
   REPROVADO: "Reprovado",
   EM_EXECUCAO: "Em execução",
   CONCLUIDO: "Concluído",
+  ENTREGUE: "Entregue",
 };
 
 const classesSituacao = {
@@ -22,6 +23,7 @@ const classesSituacao = {
   REPROVADO: "situacao-reprovado",
   EM_EXECUCAO: "situacao-em-execucao",
   CONCLUIDO: "situacao-concluido",
+  ENTREGUE: "situacao-entregue",
 };
 
 function formatarDataHora(dataHora) {
@@ -177,171 +179,194 @@ export default function OrdensServicoPage() {
               <p className="aviso">Nenhuma ordem de serviço aberta.</p>
             ) : (
               <ul className="lista-clientes lista-ordens">
-                {ordensServico.map((ordemServico) => (
-                  <li className="cartao-os" key={ordemServico.id}>
-                    <header className="cabecalho-os">
-                      <div>
-                        <p className="identificador-os">
-                          OS #{formatarNumeroOrdem(ordemServico.id)}
-                        </p>
+                {ordensServico.map((ordemServico) => {
+                  const videoEntradaUrl =
+                    ordemServico.videoEntradaUrl || ordemServico.videoUrl;
 
-                        <h2>{ordemServico.clienteNome}</h2>
+                  const videoEntradaTamanho = ordemServico.videoTamanho;
 
-                        <p className="resumo-os">
+                  return (
+                    <li className="cartao-os" key={ordemServico.id}>
+                      <header className="cabecalho-os">
+                        <div>
+                          <p className="identificador-os">
+                            OS #{formatarNumeroOrdem(ordemServico.id)}
+                          </p>
+
+                          <h2>{ordemServico.clienteNome}</h2>
+
+                          <p className="resumo-os">
+                            {ordemServico.veiculoMarca}{" "}
+                            {ordemServico.veiculoModelo}
+                            {" · Mecânico: "}
+                            {ordemServico.mecanicoNome}
+                          </p>
+                        </div>
+
+                        <span
+                          className={`situacao-os ${
+                            classesSituacao[ordemServico.status] || ""
+                          }`}
+                        >
+                          {situacoes[ordemServico.status] ||
+                            ordemServico.status}
+                        </span>
+                      </header>
+
+                      <dl className="detalhes-os">
+                        <dt>Entrada na oficina</dt>
+                        <dd>{formatarDataHora(ordemServico.recebidoEm)}</dd>
+
+                        <dt>Veículo atendido</dt>
+                        <dd>
                           {ordemServico.veiculoMarca}{" "}
                           {ordemServico.veiculoModelo}
-                          {" · Mecânico: "}
-                          {ordemServico.mecanicoNome}
-                        </p>
-                      </div>
+                        </dd>
 
-                      <span
-                        className={`situacao-os ${
-                          classesSituacao[ordemServico.status] || ""
-                        }`}
-                      >
-                        {situacoes[ordemServico.status] || ordemServico.status}
-                      </span>
-                    </header>
+                        <dt>Mecânico responsável</dt>
+                        <dd>{ordemServico.mecanicoNome}</dd>
 
-                    <dl className="detalhes-os">
-                      <dt>Entrada na oficina</dt>
-                      <dd>{formatarDataHora(ordemServico.recebidoEm)}</dd>
+                        <dt>Relato do cliente</dt>
+                        <dd className="observacoes-cliente">
+                          {ordemServico.relatoCliente}
+                        </dd>
 
-                      <dt>Veículo atendido</dt>
-                      <dd>
-                        {ordemServico.veiculoMarca} {ordemServico.veiculoModelo}
-                      </dd>
+                        <dt>Carregador recebido</dt>
+                        <dd>
+                          {ordemServico.carregadorRecebido
+                            ? "Recebido"
+                            : "Não recebido"}
+                        </dd>
 
-                      <dt>Mecânico responsável</dt>
-                      <dd>{ordemServico.mecanicoNome}</dd>
+                        <dt>Itens recebidos</dt>
+                        <dd className="observacoes-cliente">
+                          {ordemServico.acessoriosRecebidos}
+                        </dd>
 
-                      <dt>Relato do cliente</dt>
-                      <dd className="observacoes-cliente">
-                        {ordemServico.relatoCliente}
-                      </dd>
+                        {ordemServico.observacoesRecebimento && (
+                          <>
+                            <dt>Condições no recebimento</dt>
+                            <dd className="observacoes-cliente">
+                              {ordemServico.observacoesRecebimento}
+                            </dd>
+                          </>
+                        )}
 
-                      <dt>Carregador recebido</dt>
-                      <dd>
-                        {ordemServico.carregadorRecebido
-                          ? "Recebido"
-                          : "Não recebido"}
-                      </dd>
+                        {ordemServico.diagnostico && (
+                          <>
+                            <dt>Diagnóstico técnico</dt>
+                            <dd className="observacoes-cliente">
+                              {ordemServico.diagnostico}
+                            </dd>
 
-                      <dt>Itens recebidos</dt>
-                      <dd className="observacoes-cliente">
-                        {ordemServico.acessoriosRecebidos}
-                      </dd>
+                            <dt>Orçamento</dt>
+                            <dd className="observacoes-cliente">
+                              {ordemServico.descricaoOrcamento}
+                              {" — "}
+                              {formatarMoeda(ordemServico.valorOrcamento)}
+                            </dd>
 
-                      {ordemServico.observacoesRecebimento && (
-                        <>
-                          <dt>Condições no recebimento</dt>
-                          <dd className="observacoes-cliente">
-                            {ordemServico.observacoesRecebimento}
-                          </dd>
-                        </>
+                            <dt>Orçamento enviado em</dt>
+                            <dd>
+                              {formatarDataHora(
+                                ordemServico.orcamentoEnviadoEm,
+                              )}
+                            </dd>
+                          </>
+                        )}
+
+                        {ordemServico.decisaoOrcamentoEm && (
+                          <>
+                            <dt>Decisão registrada em</dt>
+                            <dd>
+                              {formatarDataHora(
+                                ordemServico.decisaoOrcamentoEm,
+                              )}
+                            </dd>
+
+                            {ordemServico.observacaoDecisao && (
+                              <>
+                                <dt>Observação do cliente</dt>
+                                <dd className="observacoes-cliente">
+                                  {ordemServico.observacaoDecisao}
+                                </dd>
+                              </>
+                            )}
+                          </>
+                        )}
+
+                        {ordemServico.execucaoIniciadaEm && (
+                          <>
+                            <dt>Serviço iniciado em</dt>
+                            <dd>
+                              {formatarDataHora(
+                                ordemServico.execucaoIniciadaEm,
+                              )}
+                            </dd>
+                          </>
+                        )}
+
+                        {ordemServico.concluidoEm && (
+                          <>
+                            <dt>Serviço concluído em</dt>
+                            <dd>
+                              {formatarDataHora(ordemServico.concluidoEm)}
+                            </dd>
+
+                            {ordemServico.observacoesConclusao && (
+                              <>
+                                <dt>Serviço realizado</dt>
+                                <dd className="observacoes-cliente">
+                                  {ordemServico.observacoesConclusao}
+                                </dd>
+                              </>
+                            )}
+                          </>
+                        )}
+
+                        <dt>Vídeo de vistoria de entrada</dt>
+                        <dd>
+                          {videoEntradaUrl
+                            ? formatarTamanho(videoEntradaTamanho)
+                            : "Nenhum vídeo anexado"}
+                        </dd>
+                      </dl>
+
+                      {videoEntradaUrl && (
+                        <div className="acoes-formulario acoes-cliente">
+                          <a
+                            className="link-botao botao-secundario"
+                            href={videoEntradaUrl}
+                          >
+                            Baixar vídeo de entrada
+                          </a>
+                        </div>
                       )}
 
-                      {ordemServico.diagnostico && (
-                        <>
-                          <dt>Diagnóstico técnico</dt>
-                          <dd className="observacoes-cliente">
-                            {ordemServico.diagnostico}
-                          </dd>
-
-                          <dt>Orçamento</dt>
-                          <dd className="observacoes-cliente">
-                            {ordemServico.descricaoOrcamento}
-                            {" — "}
-                            {formatarMoeda(ordemServico.valorOrcamento)}
-                          </dd>
-
-                          <dt>Orçamento enviado em</dt>
-                          <dd>
-                            {formatarDataHora(ordemServico.orcamentoEnviadoEm)}
-                          </dd>
-                        </>
+                      {ordemServico.status === "EM_DIAGNOSTICO" && (
+                        <DiagnosticoOrcamentoForm
+                          ordemServico={ordemServico}
+                          onSalvo={atualizarOrdem}
+                        />
                       )}
 
-                      {ordemServico.decisaoOrcamentoEm && (
-                        <>
-                          <dt>Decisão registrada em</dt>
-                          <dd>
-                            {formatarDataHora(ordemServico.decisaoOrcamentoEm)}
-                          </dd>
-
-                          {ordemServico.observacaoDecisao && (
-                            <>
-                              <dt>Observação do cliente</dt>
-                              <dd className="observacoes-cliente">
-                                {ordemServico.observacaoDecisao}
-                              </dd>
-                            </>
-                          )}
-                        </>
+                      {ordemServico.status === "AGUARDANDO_APROVACAO" && (
+                        <DecisaoOrcamentoForm
+                          ordemServico={ordemServico}
+                          onSalvo={atualizarOrdem}
+                        />
                       )}
 
-                      {ordemServico.execucaoIniciadaEm && (
-                        <>
-                          <dt>Serviço iniciado em</dt>
-                          <dd>
-                            {formatarDataHora(ordemServico.execucaoIniciadaEm)}
-                          </dd>
-                        </>
+                      {(ordemServico.status === "APROVADO" ||
+                        ordemServico.status === "EM_EXECUCAO") && (
+                        <ExecucaoConclusaoForm
+                          ordemServico={ordemServico}
+                          onSalvo={atualizarOrdem}
+                        />
                       )}
-
-                      {ordemServico.concluidoEm && (
-                        <>
-                          <dt>Serviço concluído em</dt>
-                          <dd>{formatarDataHora(ordemServico.concluidoEm)}</dd>
-
-                          {ordemServico.observacoesConclusao && (
-                            <>
-                              <dt>Serviço realizado</dt>
-                              <dd className="observacoes-cliente">
-                                {ordemServico.observacoesConclusao}
-                              </dd>
-                            </>
-                          )}
-                        </>
-                      )}
-
-                      <dt>Vídeo de vistoria</dt>
-                      <dd>{formatarTamanho(ordemServico.videoTamanho)}</dd>
-                    </dl>
-
-                    <div className="acoes-formulario acoes-cliente">
-                      <a
-                        className="link-botao botao-secundario"
-                        href={ordemServico.videoUrl}
-                      >
-                        Baixar vídeo
-                      </a>
-                    </div>
-
-                    {ordemServico.status === "EM_DIAGNOSTICO" && (
-                      <DiagnosticoOrcamentoForm
-                        ordemServico={ordemServico}
-                        onSalvo={atualizarOrdem}
-                      />
-                    )}
-
-                    {ordemServico.status === "AGUARDANDO_APROVACAO" && (
-                      <DecisaoOrcamentoForm
-                        ordemServico={ordemServico}
-                        onSalvo={atualizarOrdem}
-                      />
-                    )}
-
-                    {(ordemServico.status === "APROVADO" ||
-                      ordemServico.status === "EM_EXECUCAO") && (
-                      <ExecucaoConclusaoForm
-                        ordemServico={ordemServico}
-                        onSalvo={atualizarOrdem}
-                      />
-                    )}
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>

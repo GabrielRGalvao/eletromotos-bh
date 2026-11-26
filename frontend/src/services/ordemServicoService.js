@@ -1,3 +1,5 @@
+import { apiFetch } from "./api";
+
 async function lerResposta(resposta) {
   if (!resposta.ok) {
     const dados = await resposta.json().catch(() => ({}));
@@ -14,7 +16,7 @@ async function lerResposta(resposta) {
 }
 
 export async function listarOrdensServico(signal) {
-  const resposta = await fetch("/api/ordens-servico", { signal });
+  const resposta = await apiFetch("/api/ordens-servico", { signal });
 
   return lerResposta(resposta);
 }
@@ -31,7 +33,7 @@ export async function receberAgendamento(agendamentoId, dados, video) {
 
   formulario.append("video", video);
 
-  const resposta = await fetch(
+  const resposta = await apiFetch(
     `/api/ordens-servico/receber-agendamento/${agendamentoId}`,
     {
       method: "POST",
@@ -43,7 +45,7 @@ export async function receberAgendamento(agendamentoId, dados, video) {
 }
 
 export async function registrarDiagnostico(ordemServicoId, dados) {
-  const resposta = await fetch(
+  const resposta = await apiFetch(
     `/api/ordens-servico/${ordemServicoId}/diagnostico`,
     {
       method: "PATCH",
@@ -58,7 +60,7 @@ export async function registrarDiagnostico(ordemServicoId, dados) {
 }
 
 export async function registrarDecisaoOrcamento(ordemServicoId, dados) {
-  const resposta = await fetch(
+  const resposta = await apiFetch(
     `/api/ordens-servico/${ordemServicoId}/decisao-orcamento`,
     {
       method: "PATCH",
@@ -73,7 +75,7 @@ export async function registrarDecisaoOrcamento(ordemServicoId, dados) {
 }
 
 export async function iniciarExecucao(ordemServicoId) {
-  const resposta = await fetch(
+  const resposta = await apiFetch(
     `/api/ordens-servico/${ordemServicoId}/iniciar-execucao`,
     {
       method: "PATCH",
@@ -84,7 +86,7 @@ export async function iniciarExecucao(ordemServicoId) {
 }
 
 export async function concluirOrdemServico(ordemServicoId, dados) {
-  const resposta = await fetch(
+  const resposta = await apiFetch(
     `/api/ordens-servico/${ordemServicoId}/concluir`,
     {
       method: "PATCH",

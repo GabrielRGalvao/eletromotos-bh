@@ -1,28 +1,24 @@
-import { useRef, useState } from 'react'
-import { receberAgendamento } from '../services/ordemServicoService'
+import { useRef, useState } from "react";
+import { receberAgendamento } from "../services/ordemServicoService";
 
 const valoresIniciais = {
-  agendamentoId: '',
-  carregadorRecebido: '',
-  acessoriosRecebidos: '',
-  observacoesRecebimento: '',
+  agendamentoId: "",
+  carregadorRecebido: "",
+  acessoriosRecebidos: "",
+  observacoesRecebimento: "",
   video: null,
-}
+};
 
-const tiposAceitos = [
-  'video/mp4',
-  'video/webm',
-  'video/quicktime',
-]
+const tiposAceitos = ["video/mp4", "video/webm", "video/quicktime"];
 
 function formatarData(data) {
-  return data.split('-').reverse().join('/')
+  return data.split("-").reverse().join("/");
 }
 
 function mensagemErro(erro) {
   return erro instanceof TypeError
-    ? 'Não foi possível conectar ao servidor. Tente novamente.'
-    : erro.message
+    ? "Não foi possível conectar ao servidor. Tente novamente."
+    : erro.message;
 }
 
 function Campo({ id, rotulo, erro, children }) {
@@ -37,130 +33,119 @@ function Campo({ id, rotulo, erro, children }) {
         </span>
       )}
     </div>
-  )
+  );
 }
 
-export default function RecebimentoForm({
-  agendamentos,
-  onSalvo,
-}) {
-  const [dados, setDados] = useState(valoresIniciais)
-  const [salvando, setSalvando] = useState(false)
-  const [erro, setErro] = useState('')
-  const [errosCampos, setErrosCampos] = useState({})
-  const [sucesso, setSucesso] = useState('')
-  const campoVideo = useRef(null)
+export default function RecebimentoForm({ agendamentos, onSalvo }) {
+  const [dados, setDados] = useState(valoresIniciais);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
+  const [errosCampos, setErrosCampos] = useState({});
+  const [sucesso, setSucesso] = useState("");
+  const campoVideo = useRef(null);
 
   function alterarCampo(evento) {
-    const { name, value } = evento.target
+    const { name, value } = evento.target;
 
     setDados((atuais) => ({
       ...atuais,
       [name]: value,
-    }))
+    }));
 
-    setErro('')
-    setErrosCampos({})
-    setSucesso('')
+    setErro("");
+    setErrosCampos({});
+    setSucesso("");
   }
 
   function alterarVideo(evento) {
-    const video = evento.target.files?.[0] || null
+    const video = evento.target.files?.[0] || null;
 
     setDados((atuais) => ({
       ...atuais,
       video,
-    }))
+    }));
 
-    setErro('')
-    setErrosCampos({})
-    setSucesso('')
+    setErro("");
+    setErrosCampos({});
+    setSucesso("");
   }
 
   function limparFormulario() {
-    setDados(valoresIniciais)
-    campoVideo.current.value = ''
+    setDados(valoresIniciais);
+
+    if (campoVideo.current) {
+      campoVideo.current.value = "";
+    }
   }
 
   async function salvar(evento) {
-    evento.preventDefault()
+    evento.preventDefault();
 
-    if (salvando) return
+    if (salvando) return;
 
-    const erros = {}
+    const erros = {};
 
     if (!dados.agendamentoId) {
-      erros.agendamentoId = 'Selecione o agendamento'
+      erros.agendamentoId = "Selecione o agendamento";
     }
 
     if (!dados.carregadorRecebido) {
-      erros.carregadorRecebido =
-        'Informe se o carregador foi recebido'
+      erros.carregadorRecebido = "Informe se o carregador foi recebido";
     }
 
     if (!dados.acessoriosRecebidos.trim()) {
-      erros.acessoriosRecebidos =
-        'Informe os acessórios ou escreva Nenhum'
+      erros.acessoriosRecebidos = "Informe os acessórios ou escreva Nenhum";
     }
 
-    if (!dados.video) {
-      erros.video = 'Selecione o vídeo de vistoria'
-    } else if (!tiposAceitos.includes(dados.video.type)) {
-      erros.video = 'Envie um vídeo MP4, WebM ou MOV'
-    } else if (dados.video.size > 100 * 1024 * 1024) {
-      erros.video = 'O vídeo deve ter no máximo 100 MB'
+    if (dados.video) {
+      if (!tiposAceitos.includes(dados.video.type)) {
+        erros.video = "Envie um vídeo MP4, WebM ou MOV";
+      } else if (dados.video.size > 100 * 1024 * 1024) {
+        erros.video = "O vídeo deve ter no máximo 100 MB";
+      }
     }
 
-    setErrosCampos(erros)
-    setErro('')
-    setSucesso('')
+    setErrosCampos(erros);
+    setErro("");
+    setSucesso("");
 
     if (Object.keys(erros).length > 0) {
-      setErro('Confira os campos informados.')
-      return
+      setErro("Confira os campos informados.");
+      return;
     }
 
-    setSalvando(true)
+    setSalvando(true);
 
     try {
       const ordemServico = await receberAgendamento(
         Number(dados.agendamentoId),
         {
-          carregadorRecebido:
-            dados.carregadorRecebido === 'true',
-          acessoriosRecebidos:
-            dados.acessoriosRecebidos.trim(),
-          observacoesRecebimento:
-            dados.observacoesRecebimento.trim() || null,
+          carregadorRecebido: dados.carregadorRecebido === "true",
+          acessoriosRecebidos: dados.acessoriosRecebidos.trim(),
+          observacoesRecebimento: dados.observacoesRecebimento.trim() || null,
         },
-        dados.video
-      )
+        dados.video,
+      );
 
-      limparFormulario()
-      setSucesso(
-        `Ordem de serviço #${ordemServico.id} aberta com sucesso.`
-      )
+      limparFormulario();
 
-      onSalvo(ordemServico)
+      setSucesso(`Ordem de serviço #${ordemServico.id} aberta com sucesso.`);
+
+      onSalvo(ordemServico);
     } catch (error) {
-      setErro(mensagemErro(error))
-      setErrosCampos(error.campos || {})
+      setErro(mensagemErro(error));
+      setErrosCampos(error.campos || {});
     } finally {
-      setSalvando(false)
+      setSalvando(false);
     }
   }
 
   return (
-    <section
-      className="painel-formulario"
-      aria-labelledby="titulo-recebimento"
-    >
+    <section className="painel-formulario" aria-labelledby="titulo-recebimento">
       <h2 id="titulo-recebimento">Receber veículo</h2>
 
       {agendamentos.length === 0 ? (
-        <p className="aviso">
-          Não há agendamentos pendentes de recebimento.
-        </p>
+        <p className="aviso">Não há agendamentos pendentes de recebimento.</p>
       ) : (
         <form onSubmit={salvar} noValidate>
           <fieldset disabled={salvando}>
@@ -181,20 +166,14 @@ export default function RecebimentoForm({
                 required
                 aria-invalid={Boolean(errosCampos.agendamentoId)}
               >
-                <option value="">
-                  Selecione o agendamento
-                </option>
+                <option value="">Selecione o agendamento</option>
 
                 {agendamentos.map((agendamento) => (
-                  <option
-                    key={agendamento.id}
-                    value={agendamento.id}
-                  >
+                  <option key={agendamento.id} value={agendamento.id}>
                     #{agendamento.id} — {agendamento.clienteNome}
-                    {' — '}
-                    {agendamento.veiculoMarca}{' '}
-                    {agendamento.veiculoModelo}
-                    {' — '}
+                    {" — "}
+                    {agendamento.veiculoMarca} {agendamento.veiculoModelo}
+                    {" — "}
                     {formatarData(agendamento.dataAgendamento)}
                   </option>
                 ))}
@@ -209,7 +188,7 @@ export default function RecebimentoForm({
                   type="radio"
                   name="carregadorRecebido"
                   value="true"
-                  checked={dados.carregadorRecebido === 'true'}
+                  checked={dados.carregadorRecebido === "true"}
                   onChange={alterarCampo}
                 />
                 Sim
@@ -220,7 +199,7 @@ export default function RecebimentoForm({
                   type="radio"
                   name="carregadorRecebido"
                   value="false"
-                  checked={dados.carregadorRecebido === 'false'}
+                  checked={dados.carregadorRecebido === "false"}
                   onChange={alterarCampo}
                 />
                 Não
@@ -247,9 +226,7 @@ export default function RecebimentoForm({
                 maxLength={2000}
                 required
                 placeholder="Ex.: Retrovisor esquerdo, capacete. Escreva Nenhum se não houver."
-                aria-invalid={Boolean(
-                  errosCampos.acessoriosRecebidos
-                )}
+                aria-invalid={Boolean(errosCampos.acessoriosRecebidos)}
               />
             </Campo>
 
@@ -270,7 +247,7 @@ export default function RecebimentoForm({
 
             <Campo
               id="recebimento-video"
-              rotulo="Vídeo de vistoria"
+              rotulo="Vídeo de vistoria de entrada (opcional)"
               erro={errosCampos.video}
             >
               <input
@@ -280,19 +257,19 @@ export default function RecebimentoForm({
                 type="file"
                 accept="video/mp4,video/webm,video/quicktime"
                 onChange={alterarVideo}
-                required
                 aria-invalid={Boolean(errosCampos.video)}
               />
 
               <span className="ajuda-campo">
-                Formatos aceitos: MP4, WebM ou MOV. Máximo: 100 MB.
+                Formatos aceitos: MP4, WebM ou MOV. Máximo: 100 MB. O vídeo não
+                é obrigatório.
               </span>
             </Campo>
 
             <button type="submit">
               {salvando
-                ? 'Registrando recebimento...'
-                : 'Abrir ordem de serviço'}
+                ? "Registrando recebimento..."
+                : "Abrir ordem de serviço"}
             </button>
           </fieldset>
         </form>
@@ -310,5 +287,5 @@ export default function RecebimentoForm({
         </p>
       )}
     </section>
-  )
+  );
 }

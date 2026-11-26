@@ -1,3 +1,4 @@
+
 package br.com.eletromotosbh.ordemservico;
 
 import br.com.eletromotosbh.agendamento.Agendamento;
@@ -67,14 +68,35 @@ public class OrdemServico {
     @Column(name = "observacoes_conclusao", columnDefinition = "TEXT")
     private String observacoesConclusao;
 
-    @Column(name = "video_chave", nullable = false, unique = true, length = 255)
-    private String videoChave;
+    @Column(name = "video_entrada_chave", unique = true, length = 255)
+    private String videoEntradaChave;
 
-    @Column(name = "video_tipo", nullable = false, length = 50)
-    private String videoTipo;
+    @Column(name = "video_entrada_tipo", length = 50)
+    private String videoEntradaTipo;
 
-    @Column(name = "video_tamanho", nullable = false)
-    private long videoTamanho;
+    @Column(name = "video_entrada_tamanho")
+    private Long videoEntradaTamanho;
+
+    @Column(name = "video_entrada_em")
+    private Instant videoEntradaEm;
+
+    @Column(name = "video_saida_chave", unique = true, length = 255)
+    private String videoSaidaChave;
+
+    @Column(name = "video_saida_tipo", length = 50)
+    private String videoSaidaTipo;
+
+    @Column(name = "video_saida_tamanho")
+    private Long videoSaidaTamanho;
+
+    @Column(name = "video_saida_em")
+    private Instant videoSaidaEm;
+
+    @Column(name = "entregue_em")
+    private Instant entregueEm;
+
+    @Column(name = "entregue_por", length = 150)
+    private String entreguePor;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
@@ -91,9 +113,9 @@ public class OrdemServico {
             boolean carregadorRecebido,
             String acessoriosRecebidos,
             String observacoesRecebimento,
-            String videoChave,
-            String videoTipo,
-            long videoTamanho) {
+            String videoEntradaChave,
+            String videoEntradaTipo,
+            Long videoEntradaTamanho) {
         this.agendamento = agendamento;
         this.veiculo = agendamento.getVeiculo();
         this.mecanico = agendamento.getMecanico();
@@ -101,9 +123,13 @@ public class OrdemServico {
         this.carregadorRecebido = carregadorRecebido;
         this.acessoriosRecebidos = acessoriosRecebidos;
         this.observacoesRecebimento = observacoesRecebimento;
-        this.videoChave = videoChave;
-        this.videoTipo = videoTipo;
-        this.videoTamanho = videoTamanho;
+        this.videoEntradaChave = videoEntradaChave;
+        this.videoEntradaTipo = videoEntradaTipo;
+        this.videoEntradaTamanho = videoEntradaTamanho;
+
+        if (videoEntradaChave != null) {
+            this.videoEntradaEm = Instant.now();
+        }
     }
 
     @PrePersist
@@ -146,6 +172,41 @@ public class OrdemServico {
         this.status = StatusOrdemServico.CONCLUIDO;
         this.observacoesConclusao = observacoesConclusao;
         this.concluidoEm = Instant.now();
+    }
+
+    public void registrarEntrega(
+            String videoSaidaChave,
+            String videoSaidaTipo,
+            Long videoSaidaTamanho,
+            String entreguePor) {
+
+        if (status != StatusOrdemServico.CONCLUIDO) {
+            throw new IllegalStateException(
+                    "Somente ordens concluídas podem ser entregues");
+        }
+
+        if (entreguePor == null || entreguePor.isBlank()) {
+            throw new IllegalArgumentException(
+                    "O responsável pela entrega é obrigatório");
+        }
+
+        if (videoSaidaChave != null) {
+            if (videoSaidaTipo == null
+                    || videoSaidaTamanho == null
+                    || videoSaidaTamanho <= 0) {
+                throw new IllegalArgumentException(
+                        "Os dados do vídeo de saída são inválidos");
+            }
+
+            this.videoSaidaChave = videoSaidaChave;
+            this.videoSaidaTipo = videoSaidaTipo;
+            this.videoSaidaTamanho = videoSaidaTamanho;
+            this.videoSaidaEm = Instant.now();
+        }
+
+        this.entreguePor = entreguePor.trim();
+        this.entregueEm = Instant.now();
+        this.status = StatusOrdemServico.ENTREGUE;
     }
 
     public Long getId() {
@@ -204,16 +265,56 @@ public class OrdemServico {
         return observacaoDecisao;
     }
 
+    public String getVideoEntradaChave() {
+        return videoEntradaChave;
+    }
+
+    public String getVideoEntradaTipo() {
+        return videoEntradaTipo;
+    }
+
+    public Long getVideoEntradaTamanho() {
+        return videoEntradaTamanho;
+    }
+
+    public Instant getVideoEntradaEm() {
+        return videoEntradaEm;
+    }
+
+    public String getVideoSaidaChave() {
+        return videoSaidaChave;
+    }
+
+    public String getVideoSaidaTipo() {
+        return videoSaidaTipo;
+    }
+
+    public Long getVideoSaidaTamanho() {
+        return videoSaidaTamanho;
+    }
+
+    public Instant getVideoSaidaEm() {
+        return videoSaidaEm;
+    }
+
+    public Instant getEntregueEm() {
+        return entregueEm;
+    }
+
+    public String getEntreguePor() {
+        return entreguePor;
+    }
+
     public String getVideoChave() {
-        return videoChave;
+        return videoEntradaChave;
     }
 
     public String getVideoTipo() {
-        return videoTipo;
+        return videoEntradaTipo;
     }
 
     public long getVideoTamanho() {
-        return videoTamanho;
+        return videoEntradaTamanho == null ? 0L : videoEntradaTamanho;
     }
 
     public StatusOrdemServico getStatus() {

@@ -1,3 +1,4 @@
+
 package br.com.eletromotosbh.ordemservico;
 
 public enum StatusOrdemServico {
@@ -6,5 +7,6 @@ public enum StatusOrdemServico {
     APROVADO,
     REPROVADO,
     EM_EXECUCAO,
-    CONCLUIDO
+    CONCLUIDO,
+    ENTREGUE
 }

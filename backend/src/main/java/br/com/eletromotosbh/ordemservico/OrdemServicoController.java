@@ -1,5 +1,7 @@
+
 package br.com.eletromotosbh.ordemservico;
 
+import br.com.eletromotosbh.ordemservico.dto.ConclusaoServicoRequest;
 import br.com.eletromotosbh.ordemservico.dto.DecisaoOrcamentoRequest;
 import br.com.eletromotosbh.ordemservico.dto.DiagnosticoOrcamentoRequest;
 import br.com.eletromotosbh.ordemservico.dto.OrdemServicoResponse;
@@ -12,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import br.com.eletromotosbh.ordemservico.dto.ConclusaoServicoRequest;
 
 import java.util.List;
 
@@ -68,6 +69,17 @@ public class OrdemServicoController {
         return ordemServicoService.concluir(id, request);
     }
 
+    @PostMapping(value = "/{id}/entrega", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public OrdemServicoResponse registrarEntrega(
+            @PathVariable("id") Long id,
+            @RequestParam("entreguePor") String entreguePor,
+            @RequestPart(value = "video", required = false) MultipartFile video) {
+        return ordemServicoService.registrarEntrega(
+                id,
+                entreguePor,
+                video);
+    }
+
     @GetMapping
     public List<OrdemServicoResponse> listar() {
         return ordemServicoService.listar();
@@ -83,6 +95,30 @@ public class OrdemServicoController {
     public ResponseEntity<Resource> baixarVideo(
             @PathVariable("id") Long id) {
         var video = ordemServicoService.buscarVideo(id);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(video.tipo()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment")
+                .header("X-Content-Type-Options", "nosniff")
+                .body(video.arquivo());
+    }
+
+    @GetMapping("/{id}/video-entrada")
+    public ResponseEntity<Resource> baixarVideoEntrada(
+            @PathVariable("id") Long id) {
+        var video = ordemServicoService.buscarVideoEntrada(id);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(video.tipo()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment")
+                .header("X-Content-Type-Options", "nosniff")
+                .body(video.arquivo());
+    }
+
+    @GetMapping("/{id}/video-saida")
+    public ResponseEntity<Resource> baixarVideoSaida(
+            @PathVariable("id") Long id) {
+        var video = ordemServicoService.buscarVideoSaida(id);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(video.tipo()))
