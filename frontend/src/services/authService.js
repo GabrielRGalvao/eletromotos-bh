@@ -1,44 +1,53 @@
+import { apiFetch, atualizarTokenCsrf } from "./api";
+
 async function dadosDaResposta(resposta) {
-  return resposta.json().catch(() => ({}))
+  return resposta.json().catch(() => ({}));
 }
 
 export async function entrar(dados) {
-  const resposta = await fetch("/api/auth/login", {
+  const resposta = await apiFetch("/api/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "same-origin",
     body: JSON.stringify(dados),
-  })
+  });
 
   if (!resposta.ok) {
-    const corpo = await dadosDaResposta(resposta)
-    throw new Error(corpo.mensagem || "Não foi possível entrar.")
+    const corpo = await dadosDaResposta(resposta);
+    throw new Error(corpo.mensagem || "Não foi possível entrar.");
   }
 
-  return resposta.json()
+  const usuario = await resposta.json();
+
+  await atualizarTokenCsrf();
+
+  return usuario;
 }
 
 export async function obterSessao() {
-  const resposta = await fetch("/api/auth/me", {
-    credentials: "same-origin",
-  })
+  await atualizarTokenCsrf();
+
+  const resposta = await apiFetch("/api/auth/me");
 
   if (resposta.status === 401) {
-    return null
+    return null;
   }
 
   if (!resposta.ok) {
-    throw new Error("Não foi possível verificar o acesso.")
+    throw new Error("Não foi possível verificar o acesso.");
   }
 
-  return resposta.json()
+  return resposta.json();
 }
 
 export async function sair() {
-  await fetch("/api/auth/logout", {
+  const resposta = await apiFetch("/api/auth/logout", {
     method: "POST",
-    credentials: "same-origin",
-  })
+  });
+
+  if (!resposta.ok) {
+    const corpo = await dadosDaResposta(resposta);
+    throw new Error(corpo.mensagem || "Não foi possível encerrar a sessão.");
+  }
 }

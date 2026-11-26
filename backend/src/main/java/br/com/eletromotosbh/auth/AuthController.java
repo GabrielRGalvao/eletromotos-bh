@@ -1,3 +1,4 @@
+
 package br.com.eletromotosbh.auth;
 
 import org.springframework.http.HttpStatus;
@@ -7,6 +8,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,21 +22,31 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository;
+    private final CookieCsrfTokenRepository csrfTokenRepository;
     private final AdministradorProperties administrador;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             SecurityContextRepository securityContextRepository,
+            CookieCsrfTokenRepository csrfTokenRepository,
             AdministradorProperties administrador) {
         this.authenticationManager = authenticationManager;
         this.securityContextRepository = securityContextRepository;
+        this.csrfTokenRepository = csrfTokenRepository;
         this.administrador = administrador;
+    }
+
+    @GetMapping("/csrf")
+    public Map<String, String> csrf(CsrfToken csrfToken) {
+        return Map.of("token", csrfToken.getToken());
     }
 
     @PostMapping("/login")
@@ -55,6 +68,9 @@ public class AuthController {
                     "E-mail ou senha inválidos");
         }
 
+        httpRequest.getSession(true);
+        httpRequest.changeSessionId();
+
         var contexto = SecurityContextHolder.createEmptyContext();
         contexto.setAuthentication(autenticacao);
         SecurityContextHolder.setContext(contexto);
@@ -63,6 +79,8 @@ public class AuthController {
                 contexto,
                 httpRequest,
                 httpResponse);
+
+        csrfTokenRepository.saveToken(null, httpRequest, httpResponse);
 
         return usuarioAtual();
     }
@@ -74,13 +92,17 @@ public class AuthController {
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout(HttpServletRequest request) {
+    public void logout(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
         var sessao = request.getSession(false);
 
         if (sessao != null) {
             sessao.invalidate();
         }
 
+        csrfTokenRepository.saveToken(null, request, response);
         SecurityContextHolder.clearContext();
     }
 

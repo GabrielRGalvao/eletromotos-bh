@@ -1,69 +1,69 @@
+import { apiFetch } from "./api";
+
 export async function listarClientes(signal) {
-  const resposta = await fetch('/api/clientes', { signal })
+  const resposta = await apiFetch("/api/clientes", { signal });
 
   if (!resposta.ok) {
-    throw new Error('Não foi possível carregar os clientes.')
+    throw new Error("Não foi possível carregar os clientes.");
   }
 
-  return resposta.json()
+  return resposta.json();
 }
 
 export async function cadastrarCliente(cliente) {
-  const resposta = await fetch('/api/clientes', {
-    method: 'POST',
+  const resposta = await apiFetch("/api/clientes", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(cliente),
-  })
+  });
 
   if (!resposta.ok) {
-    const dados = await resposta.json().catch(() => ({}))
+    const dados = await resposta.json().catch(() => ({}));
 
     const erro = new Error(
-      dados.mensagem || 'Não foi possível cadastrar o cliente.'
-    )
+      dados.mensagem || "Não foi possível cadastrar o cliente.",
+    );
 
-    erro.campos = dados.campos || {}
-    throw erro
+    erro.campos = dados.campos || {};
+    throw erro;
   }
 
-  return resposta.json()
+  return resposta.json();
 }
 
 export async function atualizarCliente(id, cliente) {
-  const resposta = await fetch(`/api/clientes/${id}`, {
-    method: 'PUT',
+  const resposta = await apiFetch(`/api/clientes/${id}`, {
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(cliente),
-  })
+  });
 
   if (!resposta.ok) {
-    const dados = await resposta.json().catch(() => ({}))
+    const dados = await resposta.json().catch(() => ({}));
 
     const erro = new Error(
-      dados.mensagem || 'Não foi possível atualizar o cliente.'
-    )
+      dados.mensagem || "Não foi possível atualizar o cliente.",
+    );
 
-    erro.campos = dados.campos || {}
-    throw erro
+    erro.campos = dados.campos || {};
+    throw erro;
   }
 
-  return resposta.json()
+  return resposta.json();
 }
 
 export async function excluirCliente(id) {
-  const resposta = await fetch(`/api/clientes/${id}`, {
-    method: 'DELETE',
-  })
+  const resposta = await apiFetch(`/api/clientes/${id}`, {
+    method: "DELETE",
+  });
 
   if (!resposta.ok) {
-    const dados = await resposta.json().catch(() => ({}))
+    const dados = await resposta.json().catch(() => ({}));
 
-    throw new Error(
-      dados.mensagem || 'Não foi possível excluir o cliente.'
-    )
+    throw new Error(dados.mensagem || "Não foi possível excluir o cliente.");
   }
 }

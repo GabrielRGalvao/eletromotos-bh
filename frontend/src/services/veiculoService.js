@@ -1,3 +1,5 @@
+import { apiFetch } from "./api";
+
 async function lerResposta(resposta) {
   if (!resposta.ok) {
     const dados = await resposta.json().catch(() => ({}));
@@ -16,7 +18,7 @@ async function lerResposta(resposta) {
 }
 
 export async function listarVeiculos(clienteId, signal) {
-  const resposta = await fetch(
+  const resposta = await apiFetch(
     `/api/veiculos?clienteId=${encodeURIComponent(clienteId)}`,
     { signal },
   );
@@ -25,7 +27,7 @@ export async function listarVeiculos(clienteId, signal) {
 }
 
 export async function cadastrarVeiculo(veiculo) {
-  const resposta = await fetch("/api/veiculos", {
+  const resposta = await apiFetch("/api/veiculos", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -37,7 +39,7 @@ export async function cadastrarVeiculo(veiculo) {
 }
 
 export async function excluirVeiculo(id) {
-  const resposta = await fetch(`/api/veiculos/${encodeURIComponent(id)}`, {
+  const resposta = await apiFetch(`/api/veiculos/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
 

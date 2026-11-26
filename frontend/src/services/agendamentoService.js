@@ -1,3 +1,5 @@
+import { apiFetch } from "./api";
+
 async function lerResposta(resposta) {
   if (!resposta.ok) {
     const dados = await resposta.json().catch(() => ({}));
@@ -18,7 +20,7 @@ export async function listarAgendamentos(data = "", busca = "", signal) {
   if (busca) parametros.set("busca", busca);
 
   const consulta = parametros.toString();
-  const resposta = await fetch(
+  const resposta = await apiFetch(
     `/api/agendamentos${consulta ? `?${consulta}` : ""}`,
     { signal },
   );
@@ -27,7 +29,7 @@ export async function listarAgendamentos(data = "", busca = "", signal) {
 }
 
 export async function cadastrarAgendamento(agendamento) {
-  const resposta = await fetch("/api/agendamentos", {
+  const resposta = await apiFetch("/api/agendamentos", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(agendamento),

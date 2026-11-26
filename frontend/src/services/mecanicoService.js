@@ -1,52 +1,54 @@
+import { apiFetch } from "./api";
+
 async function lerResposta(resposta) {
   if (!resposta.ok) {
-    const dados = await resposta.json().catch(() => ({}))
+    const dados = await resposta.json().catch(() => ({}));
 
     const erro = new Error(
-      dados.mensagem || 'Não foi possível completar a operação.'
-    )
+      dados.mensagem || "Não foi possível completar a operação.",
+    );
 
-    erro.campos = dados.campos || {}
-    throw erro
+    erro.campos = dados.campos || {};
+    throw erro;
   }
 
-  return resposta.json()
+  return resposta.json();
 }
 
 export async function listarMecanicos(signal) {
-  const resposta = await fetch('/api/mecanicos', { signal })
-  return lerResposta(resposta)
+  const resposta = await apiFetch("/api/mecanicos", { signal });
+  return lerResposta(resposta);
 }
 
 export async function salvarMecanico(id, nome) {
-  const editando = id !== null
+  const editando = id !== null;
 
-  const resposta = await fetch(
-    editando ? `/api/mecanicos/${id}` : '/api/mecanicos',
+  const resposta = await apiFetch(
+    editando ? `/api/mecanicos/${id}` : "/api/mecanicos",
     {
-      method: editando ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: editando ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nome }),
-    }
-  )
+    },
+  );
 
-  return lerResposta(resposta)
+  return lerResposta(resposta);
 }
 
 export async function alterarStatusMecanico(id, ativo) {
-  const resposta = await fetch(`/api/mecanicos/${id}/status`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+  const resposta = await apiFetch(`/api/mecanicos/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ativo }),
-  })
+  });
 
-  return lerResposta(resposta)
+  return lerResposta(resposta);
 }
 
 export async function listarMecanicosAtivos(signal) {
-  const resposta = await fetch('/api/mecanicos?somenteAtivos=true', {
+  const resposta = await apiFetch("/api/mecanicos?somenteAtivos=true", {
     signal,
-  })
+  });
 
-  return lerResposta(resposta)
+  return lerResposta(resposta);
 }
