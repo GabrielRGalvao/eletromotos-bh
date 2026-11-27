@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import DecisaoOrcamentoForm from "../components/DecisaoOrcamentoForm";
 import DiagnosticoOrcamentoForm from "../components/DiagnosticoOrcamentoForm";
 import RecebimentoForm from "../components/RecebimentoForm";
+import ExecucaoConclusaoForm from "../components/ExecucaoConclusaoForm";
+import EntregaForm from "../components/EntregaForm";
 import { listarAgendamentos } from "../services/agendamentoService";
 import { listarOrdensServico } from "../services/ordemServicoService";
-import ExecucaoConclusaoForm from "../components/ExecucaoConclusaoForm";
 
 const situacoes = {
   EM_DIAGNOSTICO: "Em diagnóstico",
@@ -35,6 +36,8 @@ function formatarDataHora(dataHora) {
 }
 
 function formatarTamanho(tamanho) {
+  if (tamanho == null) return "Não informado";
+
   const megabytes = tamanho / (1024 * 1024);
 
   return `${megabytes.toLocaleString("pt-BR", {
@@ -184,6 +187,7 @@ export default function OrdensServicoPage() {
                     ordemServico.videoEntradaUrl || ordemServico.videoUrl;
 
                   const videoEntradaTamanho = ordemServico.videoTamanho;
+                  const videoSaidaUrl = ordemServico.videoSaidaUrl;
 
                   return (
                     <li className="cartao-os" key={ordemServico.id}>
@@ -330,6 +334,25 @@ export default function OrdensServicoPage() {
                             ? formatarTamanho(videoEntradaTamanho)
                             : "Nenhum vídeo anexado"}
                         </dd>
+
+                        {ordemServico.status === "ENTREGUE" && (
+                          <>
+                            <dt>Responsável pela entrega</dt>
+                            <dd>{ordemServico.entreguePor}</dd>
+
+                            <dt>Veículo entregue em</dt>
+                            <dd>{formatarDataHora(ordemServico.entregueEm)}</dd>
+
+                            <dt>Vídeo de vistoria de saída</dt>
+                            <dd>
+                              {videoSaidaUrl
+                                ? formatarTamanho(
+                                    ordemServico.videoSaidaTamanho,
+                                  )
+                                : "Nenhum vídeo anexado"}
+                            </dd>
+                          </>
+                        )}
                       </dl>
 
                       {videoEntradaUrl && (
@@ -339,6 +362,17 @@ export default function OrdensServicoPage() {
                             href={videoEntradaUrl}
                           >
                             Baixar vídeo de entrada
+                          </a>
+                        </div>
+                      )}
+
+                      {videoSaidaUrl && (
+                        <div className="acoes-formulario acoes-cliente">
+                          <a
+                            className="link-botao botao-secundario"
+                            href={videoSaidaUrl}
+                          >
+                            Baixar vídeo de saída
                           </a>
                         </div>
                       )}
@@ -360,6 +394,13 @@ export default function OrdensServicoPage() {
                       {(ordemServico.status === "APROVADO" ||
                         ordemServico.status === "EM_EXECUCAO") && (
                         <ExecucaoConclusaoForm
+                          ordemServico={ordemServico}
+                          onSalvo={atualizarOrdem}
+                        />
+                      )}
+
+                      {ordemServico.status === "CONCLUIDO" && (
+                        <EntregaForm
                           ordemServico={ordemServico}
                           onSalvo={atualizarOrdem}
                         />

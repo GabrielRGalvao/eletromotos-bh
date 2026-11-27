@@ -31,7 +31,9 @@ export async function receberAgendamento(agendamentoId, dados, video) {
     }),
   );
 
-  formulario.append("video", video);
+  if (video) {
+    formulario.append("video", video);
+  }
 
   const resposta = await apiFetch(
     `/api/ordens-servico/receber-agendamento/${agendamentoId}`,
@@ -94,6 +96,26 @@ export async function concluirOrdemServico(ordemServicoId, dados) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(dados),
+    },
+  );
+
+  return lerResposta(resposta);
+}
+
+export async function registrarEntrega(ordemServicoId, entreguePor, video) {
+  const formulario = new FormData();
+
+  formulario.append("entreguePor", entreguePor.trim());
+
+  if (video) {
+    formulario.append("video", video);
+  }
+
+  const resposta = await apiFetch(
+    `/api/ordens-servico/${ordemServicoId}/entrega`,
+    {
+      method: "POST",
+      body: formulario,
     },
   );
 
